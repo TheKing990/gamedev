@@ -3,6 +3,8 @@
 import math
 import pygame
 
+SS = (1024, 700)
+
 class vector2:
     # constructor
     def __init__(self, x, y):
@@ -44,31 +46,42 @@ class vector2:
         return '({x}, {y})'.format(x=self.x, y=self.y)
 
 # basic sprite class
-class sprite():
+class sprite(object):
     def __init__(self, img_fn, pos, vel):
-        self.SS = (1024, 700)
-        self.image = pygame.image.load(img_fn).convert()
-        self.image = pygame.transform.scale(self.image, (50, 50))
-        self.radius = 75
+        if img_fn:
+            self.image = pygame.image.load(img_fn).convert()
+            self.image = pygame.transform.scale(self.image, (75, 75))
+            self.size = self.image_l.get_size()
+            self.radius = math.sqrt((self.size[0] ** 2) + (self.size[1] ** 2))
+            self.radius = int(self.radius / 2) - 1 # make radius smaller
+            
         self.position = vector2(pos.x, pos.y)
         self.velocity = vector2(vel.x, vel.y)
-        self.color = [0, 0, 0]
 
+    def load_image(self, filename):
+        self.image = pygame.image.load(filename).convert_alpha()
+        self.image = pygame.transform.scale(self.image, (75, 75))
+        self.size = self.image.get_size()
+        self.radius = math.sqrt((self.size[0] ** 2) + (self.size[1] ** 2))
+        self.radius = int(self.radius / 2) - 1 # make radius smaller
+            
     def update(self, delta):
         self.position = self.position.add(self.velocity.scale(delta))
+        max_x = self.position.x + self.size[0]
+        min_x = self.position.x
+        max_y = self.position.y
+        min_y = self.position.y - self.size[1]
 
-        if self.position.x + self.radius > self.SS[0]: # right wall
-            self.position.x -= (self.radius + self.position.x) - self.SS[0]
-            self.velocity.x = -(self.velocity.x)
-        if self.position.x - self.radius < 0: # left wall
-            self.position.x += self.radius - self.position.x
-            self.velocity.x = -(self.velocity.x)
-        if self.position.y + self.radius > self.SS[1]: # bottom wall
-            self.position.y -= (self.radius + self.position.y) - self.SS[1]
-            self.velocity.y = -(self.velocity.y)
-        if self.position.y - self.radius < 0: # top wall
-            self.position.y += self.radius - self.position.y
-            self.velocity.y = -(self.velocity.y)
+        if max_x > SS[0]: # right wall
+            self.position.x -= max_x - SS[0]
+            self.velocity.x = -self.velocity.x
+        if min_x < 0: # left wall
+            self.position.x = 0
+            self.velocity.x = -self.velocity.x
+        if max_y > SS[1]: # bottom wall
+            self.position.y -= self.position.y - SS[1]
+        if min_y < 0: # top wall
+            self.position.y = 0
 
     def collision(self, other):
         cn = self.position.subtract(other.position)
@@ -98,18 +111,11 @@ class sprite():
             self.velocity = vt_s.add(vn_o)
             other.velocity = vt_o.add(vn_s)
 
-            self.color[0] = (self.color[0] + 64) % 256
-            other.color[0] = (other.color[0] + 64) % 256
-
     def draw(self, screen):
-        pygame.draw.circle(screen, (self.color[0], self.color[1], self.color[2]),
-                           (int(self.position.x), int(self.position.y)),
-                           self.radius, 2)
         screen.blit(self.image, (self.position.x, self.position.y))
 
 class player(sprite):
     def __init__(self, img_fn, pos, vel, name=None):
-        self.SS = (1024, 700)
         if name:
             self.name = name
         else:
@@ -148,14 +154,14 @@ class player(sprite):
             s_bottom = self.position.y + self.size[1]
             s_left = self.position.x
 
-        if s_right > self.SS[0]: # right wall
-            self.position.x -= s_right - self.SS[0]
+        if s_right > SS[0]: # right wall
+            self.position.x -= s_right - SS[0]
             #self.velocity.x = -(self.velocity.x)
         if s_left < 0: # left wall
             self.position.x += abs(s_left)
             #self.velocity.x = -(self.velocity.x)
-        if s_bottom > self.SS[1]: # bottom wall
-            self.position.y -= s_bottom - self.SS[1]
+        if s_bottom > SS[1]: # bottom wall
+            self.position.y -= s_bottom - SS[1]
             #self.velocity.y = -(self.velocity.y)
         if s_top < 0: # top wall
             self.position.y += abs(s_top)
@@ -193,9 +199,6 @@ class player(sprite):
 
             self.velocity = vt_s.add(vn_o)
             other.velocity = vt_o.add(vn_s)
-
-            self.color[0] = (self.color[0] + 64) % 256
-            other.color[0] = (other.color[0] + 64) % 256
 
     def draw(self, screen):
         if self.shield:

@@ -3,6 +3,7 @@
 import pygame
 import sys
 from utils import vector2, sprite, player
+from enemy import Enemy, Minion
 
 # constants
 SCREEN_SIZE = (1024, 700) # W x H
@@ -24,6 +25,7 @@ PLACES = {
     'center' : (SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 2)
 }
 WIZARD_FILE = 'art/Wizard_Male.png'
+MINION_FILE = 'art/Retrowizard_evil.png'
 
 # setup goes here
 pygame.init()
@@ -32,7 +34,8 @@ pygame.display.set_caption("hi there")
 
 accel = vector2(0.025, 0)
 
-sprites = [player(WIZARD_FILE, vector2(100, 100), vector2(0, 0), name="Player")
+sprites = [player(WIZARD_FILE, vector2(100, 100), vector2(0, 0), name="Player"),
+           Minion(MINION_FILE, vector2(700, 100), vector2(-0.5, 0))
            ]
 player = sprites[0]
 
