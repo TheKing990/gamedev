@@ -121,8 +121,8 @@ class player(sprite):
         else:
             self.name = "Minion"
         self.image = pygame.image.load(img_fn).convert_alpha()
-        self.image_l = pygame.transform.scale(self.image, (75, 75))
-        self.image_r = pygame.transform.flip(self.image_l, True, False)
+        self.image_r = pygame.transform.scale(self.image, (75, 75))
+        self.image_l = pygame.transform.flip(self.image_r, True, False)
         self.image_show = self.image_r
         self.size = self.image_l.get_size()
         self.radius = math.sqrt((self.size[0] ** 2) + (self.size[1] ** 2))
@@ -131,6 +131,11 @@ class player(sprite):
         self.velocity = vector2(vel.x, vel.y)
         self.color = [0, 0, 0]
         self.shield = False
+        self.shield_sprites = []
+        for fn in '012':
+            img = pygame.image.load('art/apprentice_moves/shield' + fn + '.png').convert_alpha()
+            img = pygame.transform.scale(img, (75, 75))
+            self.shield_sprites.append(img)
 
     def pic_center(self):
         size = self.image_show.get_size()
@@ -202,8 +207,6 @@ class player(sprite):
 
     def draw(self, screen):
         if self.shield:
-            pygame.draw.circle(screen,
-                               (self.color[0], self.color[1], self.color[2]),
-                               self.pic_center(),
-                               self.radius, 2)
-        screen.blit(self.image_show, (self.position.x, self.position.y))
+            screen.blit(self.shield_sprites[2], (self.position.x, self.position.y))
+        else:
+            screen.blit(self.image_show, (self.position.x, self.position.y))

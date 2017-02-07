@@ -24,18 +24,27 @@ PLACES = {
     'bottomright' : (SCREEN_SIZE[0], SCREEN_SIZE[1]),
     'center' : (SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 2)
 }
-WIZARD_FILE = 'art/Wizard_Male.png'
+WIZARD_FILE = 'art/apprentice_moves/move1.png' # 'art/Wizard_Male.png'
 MINION_FILE = 'art/Retrowizard_evil.png'
+BACKGROUND_F = 'art/forest.png'
+BACKGROUND_C = 'art/castle.png'
+
+def loadbackground():
+    bg = pygame.image.load(BACKGROUND_F).convert()
+    bg = pygame.transform.scale(bg, SCREEN_SIZE)
+    return bg
 
 # setup goes here
 pygame.init()
 screen = pygame.display.set_mode(SCREEN_SIZE)
-pygame.display.set_caption("hi there")
+pygame.display.set_caption("The Apprentice")
 
 accel = vector2(0.025, 0)
 
-sprites = [player(WIZARD_FILE, vector2(100, 100), vector2(0, 0), name="Player"),
-           Minion(MINION_FILE, vector2(700, 100), vector2(-0.5, 0))
+background = loadbackground(BACKGROUND_F)
+
+sprites = [player(WIZARD_FILE, vector2(100, 600), vector2(0, 0), name="Player"),
+           Minion(MINION_FILE, vector2(700, 600), vector2(-0.5, 0))
            ]
 player = sprites[0]
 
@@ -89,7 +98,8 @@ while True:
             sprites[i].collision(other)
 
     # draw to screen and flip
-    screen.fill(COLORS['yellow'])
+    # screen.fill(COLORS['yellow'])
+    screen.blit(background, (0, 0))
     for s in sprites:
         s.draw(screen)
     pygame.display.flip()
