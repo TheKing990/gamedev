@@ -29,8 +29,8 @@ MINION_FILE = 'art/Retrowizard_evil.png'
 BACKGROUND_F = 'art/forest.png'
 BACKGROUND_C = 'art/castle.png'
 
-def loadbackground():
-    bg = pygame.image.load(BACKGROUND_F).convert()
+def loadbackground(b_image):
+    bg = pygame.image.load(b_image).convert()
     bg = pygame.transform.scale(bg, SCREEN_SIZE)
     return bg
 
@@ -46,7 +46,7 @@ background = loadbackground(BACKGROUND_F)
 sprites = [player(WIZARD_FILE, vector2(100, 600), vector2(0, 0), name="Player"),
            Minion(MINION_FILE, vector2(700, 600), vector2(-0.5, 0))
            ]
-player = sprites[0]
+player_s = sprites[0]
 
 old_tick = pygame.time.get_ticks()
 
@@ -71,27 +71,27 @@ while True:
     keys = pygame.key.get_pressed()
 
     if keys[pygame.K_SPACE]:
-        player.shield = True
+        player_s.shield = True
     else:
-        player.shield = False
+        player_s.shield = False
         
     if keys[pygame.K_a]: # a is currently pressed
-        player.velocity.x -= 0.002
+        player_s.velocity.x -= 0.002
     elif keys[pygame.K_d]: # d is currently pressed
-        player.velocity.x += 0.002
+        player_s.velocity.x += 0.002
     else:
-        if player.velocity.x > 0:
-            player.velocity.x -= accel.scale(delta).x
-            if player.velocity.x < 0:
-                player.velocity.x = 0
-        elif player.velocity.x < 0:
-            player.velocity.x += accel.scale(delta).x
-            if player.velocity.x > 0:
-                player.velocity.x = 0
+        if player_s.velocity.x > 0:
+            player_s.velocity.x -= accel.scale(delta).x
+            if player_s.velocity.x < 0:
+                player_s.velocity.x = 0
+        elif player_s.velocity.x < 0:
+            player_s.velocity.x += accel.scale(delta).x
+            if player_s.velocity.x > 0:
+                player_s.velocity.x = 0
     
     #accel = accel.scale(delta)
     for s in sprites:
-        s.update(delta)
+        s.update(delta, player_s)
     
     for i in range(0, len(sprites)):
         for other in sprites[i + 1:]:
@@ -102,6 +102,7 @@ while True:
     screen.blit(background, (0, 0))
     for s in sprites:
         s.draw(screen)
+    
     pygame.display.flip()
     old_tick = current_tick # pygame.time.get_ticks()
     

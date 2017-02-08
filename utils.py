@@ -51,21 +51,23 @@ class sprite(object):
         if img_fn:
             self.image = pygame.image.load(img_fn).convert()
             self.image = pygame.transform.scale(self.image, (75, 75))
-            self.size = self.image_l.get_size()
+            self.size = self.image.get_size()
             self.radius = math.sqrt((self.size[0] ** 2) + (self.size[1] ** 2))
             self.radius = int(self.radius / 2) - 1 # make radius smaller
             
         self.position = vector2(pos.x, pos.y)
         self.velocity = vector2(vel.x, vel.y)
 
-    def load_image(self, filename):
+    def load_image(self, filename, size=None):
+        if not size:
+            size = (75, 75)
         self.image = pygame.image.load(filename).convert_alpha()
-        self.image = pygame.transform.scale(self.image, (75, 75))
+        self.image = pygame.transform.scale(self.image, size)
         self.size = self.image.get_size()
         self.radius = math.sqrt((self.size[0] ** 2) + (self.size[1] ** 2))
         self.radius = int(self.radius / 2) - 1 # make radius smaller
             
-    def update(self, delta):
+    def update(self, delta, player=None):
         self.position = self.position.add(self.velocity.scale(delta))
         max_x = self.position.x + self.size[0]
         min_x = self.position.x
@@ -144,7 +146,7 @@ class player(sprite):
                   )
         return center
 
-    def update(self, delta):
+    def update(self, delta, player_s=None):
         self.position = self.position.add(self.velocity.scale(delta))
 
         center = self.pic_center() # 0 = x, 1 = y
