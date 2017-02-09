@@ -2,13 +2,15 @@
 
 import math
 import pygame
+import os
 
 SS = (1024, 700)
 
 def load_Image(path):
     images = []
     for files in os.listdir(path):
-        image = pygame.image.load(path +files +'.png').convert()
+        image = pygame.image.load(path +files ).convert()
+        image = pygame.transform.scale(image, (75, 75))
         images.append(image)
     return images
 
@@ -145,9 +147,9 @@ class player(sprite):
 
 
 
-        self.shield_sprites = load_Image('art/apprentice_moves/shield')
+        self.shield_sprites = load_Image('art/apprentice_moves/shield/')
         self.index = 0
-        self..shield_current_Image = self.shield_sprites[index]
+        self.shield_current_Image = self.shield_sprites[self.index]
         self.animation_time = 0.1
         self.current_time = 0
 
@@ -176,7 +178,7 @@ class player(sprite):
         if self.current_time >= self.animation_time:
             self.current_time = 0
             self.index = (self.index + 1) % len(self.shield_sprites)
-            self.shield_current_Image[self.index]
+            self.shield_current_Image = self.shield_sprites[self.index]
 
         if self.shield:
             s_top = center[1] - self.radius
