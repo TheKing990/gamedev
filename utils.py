@@ -5,6 +5,13 @@ import pygame
 
 SS = (1024, 700)
 
+def load_Image(path):
+    images = []
+    for files in os.listdir(path):
+        image = pygame.image.load(path +files +'.png').convert()
+        images.append(image)
+    return images
+
 class vector2:
     # constructor
     def __init__(self, x, y):
@@ -133,9 +140,24 @@ class player(sprite):
         self.velocity = vector2(vel.x, vel.y)
         self.color = [0, 0, 0]
         self.shield = False
-        self.index = 0
-        self.current_Image = img_fn[self.index]
 
+
+
+
+
+        self.shield_sprites = load_Image('art/apprentice_moves/shield')
+        self.index = 0
+        self..shield_current_Image = self.shield_sprites[index]
+        self.animation_time = 0.1
+        self.current_time = 0
+
+        self.animation_frames = 6
+        self.current_frame = 0
+    """
+        for fn in '012':
+            img = pygame.image.load('art/apprentice_moves/shield' + fn + '.png').convert_alpha()
+            img = pygame.transform.scale(img, (75, 75))
+            self.shield_sprites.append(img)"""
 
 
     def pic_center(self):
@@ -149,6 +171,13 @@ class player(sprite):
         self.position = self.position.add(self.velocity.scale(delta))
 
         center = self.pic_center() # 0 = x, 1 = y
+
+        self.current_time += delta
+        if self.current_time >= self.animation_time:
+            self.current_time = 0
+            self.index = (self.index + 1) % len(self.shield_sprites)
+            self.shield_current_Image[self.index]
+
         if self.shield:
             s_top = center[1] - self.radius
             s_right = center[0] + self.radius
@@ -208,6 +237,6 @@ class player(sprite):
 
     def draw(self, screen):
         if self.shield:
-            screen.blit(self.shield_sprites[2], (self.position.x, self.position.y))
+            screen.blit(self.shield_current_Image, (self.position.x, self.position.y))
         else:
             screen.blit(self.image_show, (self.position.x, self.position.y))
