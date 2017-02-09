@@ -66,6 +66,9 @@ class sprite(object):
         self.size = self.image.get_size()
         self.radius = math.sqrt((self.size[0] ** 2) + (self.size[1] ** 2))
         self.radius = int(self.radius / 2) - 1 # make radius smaller
+
+    def flip_image(self):
+        return pygame.transform.flip(self.image, True, False)
             
     def update(self, delta, player=None):
         self.position = self.position.add(self.velocity.scale(delta))
@@ -134,6 +137,7 @@ class player(sprite):
         self.color = [0, 0, 0]
         self.shield = False
         self.shield_sprites = []
+        self.hits = 0
         for fn in '012':
             img = pygame.image.load('art/apprentice_moves/shield' + fn + '.png').convert_alpha()
             img = pygame.transform.scale(img, (75, 75))
@@ -206,6 +210,8 @@ class player(sprite):
 
             self.velocity = vt_s.add(vn_o)
             other.velocity = vt_o.add(vn_s)
+            if not self.shield:
+                self.hits = 15
 
     def draw(self, screen):
         if self.shield:
