@@ -42,12 +42,7 @@ pygame.display.set_caption("The Apprentice")
 
 clock = pygame.time.Clock()
 
-def load_Image(path):
-    images = []
-    for files in os.listdir(path):
-        image = pygame.image.load(path+ os.sep + files).convert()
-        images.append(image)
-    return images
+
 
 accel = vector2(0.025, 0)
 
