@@ -60,6 +60,7 @@ pygame.init()
 # font code from:
 # http://stackoverflow.com/questions/10077644/python-display-text-w-font-color
 myfont = pygame.font.SysFont("monospace", 24)
+hud = pygame.font.SysFont("monospace", 32)
 screen = pygame.display.set_mode(SCREEN_SIZE)
 pygame.display.set_caption("The Apprentice")
 
@@ -71,6 +72,7 @@ sprites = [player(WIZARD_FILE, vector2(100, GROUND), vector2(0, 0), name="Player
            Minion(MINION_FILE, vector2(700, GROUND), vector2(0.35, 0))
            ]
 player_s = sprites[0]
+health_color = COLORS['green']
 minions_killed = []
 
 old_tick = pygame.time.get_ticks()
@@ -86,7 +88,7 @@ while True:
             pygame.quit()
             sys.exit()
 
-    if player_s.hits > 15:
+    if player_s.hits >= 15:
         # game over
         screen.fill(COLORS['black'])
         label = myfont.render(GAME_OVER_STR, 1, COLORS['white'])
@@ -154,6 +156,19 @@ while True:
     screen.blit(background, (0, 0))
     for s in sprites:
         s.draw(screen)
+
+    if player_s.hits >= 10: # only five hits left
+        health_color = COLORS['red']
+    elif player_s.hits >= 5: # ten hits left
+        health_color = COLORS['white']
+    else:
+        health_color = COLORS['green']
+    hp_left = 15 - player_s.hits
+    if hp_left < 0:
+        hp_left = 0
+    screen.fill(COLORS['black'], (SCREEN_SIZE[0] - 170, 20, 140, 35))
+    hud_label = hud.render("HP: {}".format(hp_left), 0, health_color)
+    screen.blit(hud_label, (SCREEN_SIZE[0] - 150, 20))
     
     pygame.display.flip()
     old_tick = current_tick # pygame.time.get_ticks()
