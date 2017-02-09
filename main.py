@@ -39,6 +39,16 @@ pygame.init()
 screen = pygame.display.set_mode(SCREEN_SIZE)
 pygame.display.set_caption("The Apprentice")
 
+
+clock = pygame.time.Clock()
+
+def load_Image(path):
+    images = []
+    for files in os.listdir(path):
+        image = pygame.image.load(path+ os.sep + files).convert()
+        images.append(image)
+    return images
+
 accel = vector2(0.025, 0)
 
 background = loadbackground(BACKGROUND_F)
@@ -74,7 +84,7 @@ while True:
         player_s.shield = True
     else:
         player_s.shield = False
-        
+
     if keys[pygame.K_a]: # a is currently pressed
         player_s.velocity.x -= 0.002
     elif keys[pygame.K_d]: # d is currently pressed
@@ -88,11 +98,11 @@ while True:
             player_s.velocity.x += accel.scale(delta).x
             if player_s.velocity.x > 0:
                 player_s.velocity.x = 0
-    
+
     #accel = accel.scale(delta)
     for s in sprites:
         s.update(delta, player_s)
-    
+
     for i in range(0, len(sprites)):
         for other in sprites[i + 1:]:
             sprites[i].collision(other)
@@ -102,7 +112,6 @@ while True:
     screen.blit(background, (0, 0))
     for s in sprites:
         s.draw(screen)
-    
+
     pygame.display.flip()
     old_tick = current_tick # pygame.time.get_ticks()
-    
