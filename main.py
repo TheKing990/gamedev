@@ -30,6 +30,7 @@ WIZARD_FILE = 'art/apprentice_moves/move1.png' # 'art/Wizard_Male.png'
 MINION_FILE = 'art/Retrowizard_evil.png'
 BACKGROUND_F = 'art/forest.png'
 BACKGROUND_C = 'art/castle.png'
+HP_SHIELD = 'art/HP_Shield.png'
 GAME_OVER_STR = "Game Over! Press [ESC] to quit."
 
 def loadbackground(b_image):
@@ -55,24 +56,42 @@ def createMinion(player):
     new_minion = Minion(MINION_FILE, pos, vel)
     return new_minion
 
+def displayHP(screen, hp_left, hp_img):
+    if hp_left == 0:
+        return
+    img_s = hp_img.get_size()
+    w = img_s[0]
+    h = img_s[1]
+    row = 0
+    for i in range(hp_left):
+        x = SCREEN_SIZE[0] - ((w + 4) * ((i % 5) + 1)) - 10
+        y = 20 + (row * (h + 4)) 
+        screen.blit(hp_img, (x, y))
+        if (i + 1) % 5 == 0:
+            row = row + 1
+        
+
 # setup goes here
 pygame.init()
 # font code from:
 # http://stackoverflow.com/questions/10077644/python-display-text-w-font-color
 myfont = pygame.font.SysFont("monospace", 24)
-hud = pygame.font.SysFont("monospace", 32)
 screen = pygame.display.set_mode(SCREEN_SIZE)
 pygame.display.set_caption("The Apprentice")
 
 accel = vector2(0.025, 0)
 
 background = loadbackground(BACKGROUND_F)
+hp_image = pygame.image.load(HP_SHIELD).convert_alpha()
+hp_image_s = hp_image.get_size()
+hp_image = pygame.transform.scale(hp_image,
+                                  (int(hp_image_s[0] * 0.07),
+                                   int(hp_image_s[1] * 0.07)))
 
 sprites = [player(WIZARD_FILE, vector2(100, GROUND), vector2(0, 0), name="Player"),
            Minion(MINION_FILE, vector2(700, GROUND), vector2(0.35, 0))
            ]
 player_s = sprites[0]
-health_color = COLORS['green']
 minions_killed = []
 
 old_tick = pygame.time.get_ticks()
@@ -152,23 +171,14 @@ while True:
             sprites[i].collision(other)
 
     # draw to screen and flip
-    # screen.fill(COLORS['yellow'])
     screen.blit(background, (0, 0))
     for s in sprites:
         s.draw(screen)
 
-    if player_s.hits >= 10: # only five hits left
-        health_color = COLORS['red']
-    elif player_s.hits >= 5: # ten hits left
-        health_color = COLORS['white']
-    else:
-        health_color = COLORS['green']
     hp_left = 15 - player_s.hits
     if hp_left < 0:
         hp_left = 0
-    screen.fill(COLORS['black'], (SCREEN_SIZE[0] - 170, 20, 140, 35))
-    hud_label = hud.render("HP: {}".format(hp_left), 0, health_color)
-    screen.blit(hud_label, (SCREEN_SIZE[0] - 150, 20))
+    displayHP(screen, hp_left, hp_image)
     
     pygame.display.flip()
     old_tick = current_tick # pygame.time.get_ticks()
