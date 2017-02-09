@@ -54,7 +54,7 @@ class sprite(object):
             self.size = self.image.get_size()
             self.radius = math.sqrt((self.size[0] ** 2) + (self.size[1] ** 2))
             self.radius = int(self.radius / 2) - 1 # make radius smaller
-            
+
         self.position = vector2(pos.x, pos.y)
         self.velocity = vector2(vel.x, vel.y)
 
@@ -66,7 +66,7 @@ class sprite(object):
         self.size = self.image.get_size()
         self.radius = math.sqrt((self.size[0] ** 2) + (self.size[1] ** 2))
         self.radius = int(self.radius / 2) - 1 # make radius smaller
-            
+
     def update(self, delta, player=None):
         self.position = self.position.add(self.velocity.scale(delta))
         max_x = self.position.x + self.size[0]
@@ -133,11 +133,10 @@ class player(sprite):
         self.velocity = vector2(vel.x, vel.y)
         self.color = [0, 0, 0]
         self.shield = False
-        self.shield_sprites = []
-        for fn in '012':
-            img = pygame.image.load('art/apprentice_moves/shield' + fn + '.png').convert_alpha()
-            img = pygame.transform.scale(img, (75, 75))
-            self.shield_sprites.append(img)
+        self.index = 0
+        self.current_Image = img_fn[self.index]
+
+
 
     def pic_center(self):
         size = self.image_show.get_size()
