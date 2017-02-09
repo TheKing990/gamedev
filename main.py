@@ -79,6 +79,7 @@ while True:
         player_s.shield = True
     else:
         player_s.shield = False
+        player_s.shiled_hold = False
 
     if keys[pygame.K_a]: # a is currently pressed
         player_s.velocity.x -= 0.002

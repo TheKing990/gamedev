@@ -142,6 +142,7 @@ class player(sprite):
         self.velocity = vector2(vel.x, vel.y)
         self.color = [0, 0, 0]
         self.shield = False
+        self.shiled_hold = False
 
 
 
@@ -153,7 +154,7 @@ class player(sprite):
         self.animation_time = 0.1
         self.current_time = 0
 
-        self.animation_frames = 6
+        self.animation_frames = 50
         self.current_frame = 0
     """
         for fn in '012':
@@ -174,11 +175,19 @@ class player(sprite):
 
         center = self.pic_center() # 0 = x, 1 = y
 
-        self.current_time += delta
-        if self.current_time >= self.animation_time:
-            self.current_time = 0
-            self.index = (self.index + 1) % len(self.shield_sprites)
-            self.shield_current_Image = self.shield_sprites[self.index]
+
+        self.current_frame +=1
+        if self.current_frame >= self.animation_frames:
+            self.current_frame = 0
+
+            if self.shiled_hold != True:
+                self.index = (self.index + 1) % len(self.shield_sprites)
+                if self.index == 2:
+
+                    self.shield_current_Image = self.shield_sprites[2]
+                    self.shiled_hold = True
+                else:
+                    self.shield_current_Image = self.shield_sprites[self.index]
 
         if self.shield:
             s_top = center[1] - self.radius
