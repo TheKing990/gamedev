@@ -9,7 +9,7 @@ SS = (1024, 700)
 def load_Image(path):
     images = []
     for files in os.listdir(path):
-        image = pygame.image.load(path +files ).convert()
+        image = pygame.image.load(path +files ).convert_alpha()
         image = pygame.transform.scale(image, (75, 75))
         images.append(image)
     return images
