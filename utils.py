@@ -2,8 +2,17 @@
 
 import math
 import pygame
+import os
 
 SS = (1024, 700)
+
+def load_Image(path):
+    images = []
+    for files in os.listdir(path):
+        image = pygame.image.load(path +files ).convert_alpha()
+        image = pygame.transform.scale(image, (75, 75))
+        images.append(image)
+    return images
 
 class vector2:
     # constructor
@@ -54,7 +63,7 @@ class sprite(object):
             self.size = self.image.get_size()
             self.radius = math.sqrt((self.size[0] ** 2) + (self.size[1] ** 2))
             self.radius = int(self.radius / 2) - 1 # make radius smaller
-            
+
         self.position = vector2(pos.x, pos.y)
         self.velocity = vector2(vel.x, vel.y)
 
@@ -69,7 +78,8 @@ class sprite(object):
 
     def flip_image(self):
         return pygame.transform.flip(self.image, True, False)
-            
+
+
     def update(self, delta, player=None):
         self.position = self.position.add(self.velocity.scale(delta))
         max_x = self.position.x + self.size[0]
@@ -136,12 +146,25 @@ class player(sprite):
         self.velocity = vector2(vel.x, vel.y)
         self.color = [0, 0, 0]
         self.shield = False
-        self.shield_sprites = []
+
+        self.shiled_hold = False
+
+
+
+
+
+        self.shield_sprites = load_Image('art/apprentice_moves/shield/')
+        self.index = 0
+        self.shield_current_Image = self.shield_sprites[self.index]
+        self.animation_time = 0.1
+        self.current_time = 0
+
+        self.animation_frames = 50
+        self.current_frame = 0
+
         self.hits = 0
-        for fn in '012':
-            img = pygame.image.load('art/apprentice_moves/shield' + fn + '.png').convert_alpha()
-            img = pygame.transform.scale(img, (75, 75))
-            self.shield_sprites.append(img)
+        
+
 
     def pic_center(self):
         size = self.image_show.get_size()
@@ -154,6 +177,21 @@ class player(sprite):
         self.position = self.position.add(self.velocity.scale(delta))
 
         center = self.pic_center() # 0 = x, 1 = y
+
+
+        self.current_frame +=1
+        if self.current_frame >= self.animation_frames:
+            self.current_frame = 0
+
+            if self.shiled_hold != True:
+                self.index = (self.index + 1) % len(self.shield_sprites)
+                if self.index == 2:
+
+                    self.shield_current_Image = self.shield_sprites[2]
+                    self.shiled_hold = True
+                else:
+                    self.shield_current_Image = self.shield_sprites[self.index]
+
         if self.shield:
             s_top = center[1] - self.radius
             s_right = center[0] + self.radius
@@ -215,6 +253,6 @@ class player(sprite):
 
     def draw(self, screen):
         if self.shield:
-            screen.blit(self.shield_sprites[2], (self.position.x, self.position.y))
+            screen.blit(self.shield_current_Image, (self.position.x, self.position.y))
         else:
             screen.blit(self.image_show, (self.position.x, self.position.y))

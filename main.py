@@ -49,7 +49,7 @@ def createMinion(player):
         x_v = -0.35
     else:
         x_v = 0.35
-    
+
     pos = vector2(x_p, GROUND)
     vel = vector2(x_v, 0)
 
@@ -65,11 +65,11 @@ def displayHP(screen, hp_left, hp_img):
     row = 0
     for i in range(hp_left):
         x = SCREEN_SIZE[0] - ((w + 4) * ((i % 5) + 1)) - 10
-        y = 20 + (row * (h + 4)) 
+        y = 20 + (row * (h + 4))
         screen.blit(hp_img, (x, y))
         if (i + 1) % 5 == 0:
             row = row + 1
-        
+
 
 # setup goes here
 pygame.init()
@@ -78,6 +78,11 @@ pygame.init()
 myfont = pygame.font.SysFont("monospace", 24)
 screen = pygame.display.set_mode(SCREEN_SIZE)
 pygame.display.set_caption("The Apprentice")
+
+
+clock = pygame.time.Clock()
+
+
 
 accel = vector2(0.025, 0)
 
@@ -114,7 +119,7 @@ while True:
         screen.blit(label, (200, 200))
         pygame.display.flip()
         continue
-        
+
     # simulation stuff goes here (nothing to update yet)
     current_tick = pygame.time.get_ticks()
     delta = current_tick - old_tick
@@ -128,7 +133,8 @@ while True:
         player_s.shield = True
     else:
         player_s.shield = False
-        
+        player_s.shiled_hold = False
+
     if keys[pygame.K_a]: # a is currently pressed
         player_s.velocity.x -= 0.002
     elif keys[pygame.K_d]: # d is currently pressed
@@ -143,19 +149,22 @@ while True:
             if player_s.velocity.x > 0:
                 player_s.velocity.x = 0
 
+
     if len(sprites) == 1: # only player left
         # add new minion into game
         sprites.append(createMinion(player_s))
-    
+
+
     #accel = accel.scale(delta)
     for s in sprites:
         s.update(delta, player_s)
+
 
     for i in range(1, len(sprites)):
         for f in sprites[i].attack_count:
             f.collision(player_s)
 
-    
+
     for i in range(1, len(sprites)):
         for f in sprites[i].attack_count:
             if f.collision_minion(sprites[i]):
@@ -165,7 +174,8 @@ while True:
     for m in minions_killed:
         sprites.remove(m)
     minions_killed = [] # reset list
-    
+
+
     for i in range(0, len(sprites)):
         for other in sprites[i + 1:]:
             sprites[i].collision(other)
@@ -175,11 +185,12 @@ while True:
     for s in sprites:
         s.draw(screen)
 
+
     hp_left = 15 - player_s.hits
     if hp_left < 0:
         hp_left = 0
     displayHP(screen, hp_left, hp_image)
-    
+
+
     pygame.display.flip()
     old_tick = current_tick # pygame.time.get_ticks()
-    
