@@ -6,6 +6,7 @@ import os
 
 SS = (1024, 700)
 
+# puts images in a folder in an array.
 def load_Image(path):
     images = []
     for files in os.listdir(path):
@@ -13,6 +14,15 @@ def load_Image(path):
         image = pygame.transform.scale(image, (75, 75))
         images.append(image)
     return images
+# flips images in an array
+def flip_array_images(arr):
+    images1 = []
+    for i in range(len(arr)):
+        arr[i] = pygame.transform.flip(arr[i],True, False)
+        images1.append(arr[i])
+
+    return images1
+
 
 class vector2:
     # constructor
@@ -153,9 +163,11 @@ class player(sprite):
 
 
 
-        self.shield_sprites = load_Image('art/apprentice_moves/shield/')
+        self.shield_images = load_Image('art/apprentice_moves/shield/')
+        self.shield_sprites = self.shield_images
+        self.shield_left_sprites = flip_array_images(self.shield_images)
         self.index = 0
-        self.shield_current_Image = self.shield_sprites[self.index]
+        self.shield_current_Image = self.shield_images[self.index]
         self.animation_time = 0.1
         self.current_time = 0
 
@@ -163,7 +175,7 @@ class player(sprite):
         self.current_frame = 0
 
         self.hits = 0
-        
+
 
 
     def pic_center(self):
@@ -178,19 +190,24 @@ class player(sprite):
 
         center = self.pic_center() # 0 = x, 1 = y
 
+        if self.velocity.x > 0:
+            self.shield_images = self.shield_sprites
+        elif self.velocity.x < 0:
+            self.shield_images = self.shield_left_sprites
+
 
         self.current_frame +=1
         if self.current_frame >= self.animation_frames:
             self.current_frame = 0
 
             if self.shiled_hold != True:
-                self.index = (self.index + 1) % len(self.shield_sprites)
+                self.index = (self.index + 1) % len(self.shield_images)
                 if self.index == 2:
 
-                    self.shield_current_Image = self.shield_sprites[2]
+                    self.shield_current_Image = self.shield_images[2]
                     self.shiled_hold = True
                 else:
-                    self.shield_current_Image = self.shield_sprites[self.index]
+                    self.shield_current_Image = self.shield_images[self.index]
 
         if self.shield:
             s_top = center[1] - self.radius
