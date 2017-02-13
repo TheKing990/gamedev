@@ -16,10 +16,11 @@ def load_Image(path):
     return images
 # flips images in an array
 def flip_array_images(arr):
+
     images1 = []
-    for i in range(len(arr)):
-        arr[i] = pygame.transform.flip(arr[i],True, False)
-        images1.append(arr[i])
+    for i in arr:
+        i = pygame.transform.flip(i,True, False)
+        images1.append(i)
 
     return images1
 
@@ -158,6 +159,8 @@ class player(sprite):
         self.shield = False
 
         self.shiled_hold = False
+        self.facing_right = True
+        self.facing_left = False
 
 
 
@@ -165,9 +168,15 @@ class player(sprite):
 
         self.shield_images = load_Image('art/apprentice_moves/shield/')
         self.shield_sprites = self.shield_images
-        self.shield_left_sprites = flip_array_images(self.shield_images)
+
+
+        self.shield_left_sprites  = flip_array_images(self.shield_images)
+
+
+
         self.index = 0
         self.shield_current_Image = self.shield_images[self.index]
+
         self.animation_time = 0.1
         self.current_time = 0
 
@@ -189,12 +198,14 @@ class player(sprite):
         self.position = self.position.add(self.velocity.scale(delta))
 
         center = self.pic_center() # 0 = x, 1 = y
-
+        #print("the current velocity is " + str(self.velocity.x))
         if self.velocity.x > 0:
+            self.facing_left = False
             self.shield_images = self.shield_sprites
-        elif self.velocity.x < 0:
-            self.shield_images = self.shield_left_sprites
 
+        elif self.velocity.x < 0:
+            self.facing_left = True
+            self.shield_images = self.shield_left_sprites
 
         self.current_frame +=1
         if self.current_frame >= self.animation_frames:
@@ -235,8 +246,14 @@ class player(sprite):
 
         if self.velocity.x > 0:
             self.image_show = self.image_r
+
+
+            #self.shield_images = self.shield_sprites
         elif self.velocity.x < 0:
             self.image_show = self.image_l
+
+
+            #self.shield_images = self.shield_left_sprites
 
     def collision(self, other):
         cn = self.position.subtract(other.position)
