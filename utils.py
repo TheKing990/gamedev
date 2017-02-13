@@ -202,12 +202,21 @@ class player(sprite):
         #print("the current velocity is " + str(self.velocity.x))
         if self.velocity.x > 0:
             self.facing_left = False
+            self.facing_right = True
+            #choosing the images facing right
             self.shield_images = self.shield_sprites
+            self.walk_images = self.walk_right
 
         elif self.velocity.x < 0:
             self.facing_left = True
+            self.facing_right = False
+            # choosing the flip side of images
             self.shield_images = self.shield_left_sprites
+            self.walk_images = self.walk_left
 
+
+
+        #creating animation for shield
         self.current_frame +=1
         if self.current_frame >= self.animation_frames:
             self.current_frame = 0
@@ -249,12 +258,11 @@ class player(sprite):
             self.image_show = self.image_r
 
 
-            #self.shield_images = self.shield_sprites
+
         elif self.velocity.x < 0:
             self.image_show = self.image_l
 
 
-            #self.shield_images = self.shield_left_sprites
 
     def collision(self, other):
         cn = self.position.subtract(other.position)
