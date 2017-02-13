@@ -172,7 +172,7 @@ class player(sprite):
         '''end of shield'''
 
         '''moving normal without shield'''
-        self.walk_images = load_Image('art/apprentice_moves/normal_move')
+        self.walk_images = load_Image('art/apprentice_moves/normal_move/')
         self.walk_right = self.walk_images
         self.walk_left = flip_array_images(self.walk_images)
         self.walking_index = 0
@@ -180,7 +180,6 @@ class player(sprite):
 
         self.animation_time = 0.1
         self.current_time = 0
-        s
         self.animation_frames = 50
         self.current_frame = 0
 
