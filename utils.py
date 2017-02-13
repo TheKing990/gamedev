@@ -156,30 +156,31 @@ class player(sprite):
         self.position = vector2(pos.x, pos.y)
         self.velocity = vector2(vel.x, vel.y)
         self.color = [0, 0, 0]
-        self.shield = False
 
+
+        ''' things you need for the shield '''
+        self.shield = False
         self.shiled_hold = False
         self.facing_right = True
         self.facing_left = False
 
-
-
-
-
         self.shield_images = load_Image('art/apprentice_moves/shield/')
         self.shield_sprites = self.shield_images
-
-
         self.shield_left_sprites  = flip_array_images(self.shield_images)
-
-
-
         self.index = 0
         self.shield_current_Image = self.shield_images[self.index]
+        '''end of shield'''
+
+        '''moving normal without shield'''
+        self.walk_images = load_Image('art/apprentice_moves/normal_move')
+        self.walk_right = self.walk_images
+        self.walk_left = flip_array_images(self.walk_images)
+        self.walking_index = 0
+        self.walking_current = self.walk_images[self.walking_index]
 
         self.animation_time = 0.1
         self.current_time = 0
-
+        s
         self.animation_frames = 50
         self.current_frame = 0
 
