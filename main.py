@@ -4,7 +4,7 @@ import pygame
 import sys
 import random
 from utils import vector2, sprite, player
-from enemy import Enemy, Minion, Fireball
+from enemy import Enemy, Minion, Fireball, Boss
 
 # constants
 SCREEN_SIZE = (1024, 700) # W x H
@@ -34,6 +34,7 @@ MIDDLE = SCREEN_SIZE[0] / 2
 GROUND = 575
 WIZARD_FILE = 'art/apprentice_moves/move1.png' # 'art/Wizard_Male.png'
 MINION_FILE = 'art/Retrowizard_evil.png'
+BOSS_FILE = 'art/wolf.png'
 TITLE_SCREEN = 'art/title_screen.png'
 BACKGROUND_F = 'art/forest1.png'
 BACKGROUND_C = 'art/castle.png'
@@ -48,7 +49,7 @@ def loadbackground(b_image):
     return bg
 
 # create a new minion somewhere on the screen
-def createMinion(player):
+def createEnemy(player, boss=None):
     # player is on the right part of the screen
     if player.position.x > SCREEN_SIZE[0] / 2:
         x_p = random.randint(0, int(SCREEN_SIZE[0] / 2))
@@ -62,7 +63,11 @@ def createMinion(player):
     pos = vector2(x_p, GROUND)
     vel = vector2(x_v, 0)
 
-    new_minion = Minion(MINION_FILE, pos, vel)
+    if boss:
+        pos.y -= 30
+        new_minion = Boss(BOSS_FILE, pos, vel)
+    else:
+        new_minion = Minion(MINION_FILE, pos, vel)
     return new_minion
 
 def displayHP(screen, hp_left, hp_img):
@@ -131,12 +136,15 @@ pygame.display.set_caption("The Apprentice")
 
 # damage_taken.wav borrowed from: http://soundbible.com/995-Jab.html
 damage_taken = pygame.mixer.Sound("music/damage_taken.wav")
+# howling.wav borrowed from: http://soundbible.com/130-Werewolf-Howl.html
+howling = pygame.mixer.Sound("music/howling.wav")
+
 pygame.mixer.music.load("music/title_screen.mp3")
 pygame.mixer.music.play(-1)
 
 clock = pygame.time.Clock()
 
-accel = vector2(0.025, 0)
+accel = vector2(0.005, 0)
 
 forest = loadbackground(BACKGROUND_F)
 castle = loadbackground(BACKGROUND_C)
@@ -145,6 +153,9 @@ title = loadbackground(TITLE_SCREEN)
 stage_parts = [forest, forest, forest, forest, forest, forest]
 enemies_per_stage = [0, 10, 14, 12, 12, 15, 18]
 stage_index = 0
+last_stage = len(stage_parts) - 1
+BOSS_FIGHT = False
+
 win_background = stage_parts[stage_index]
 hp_image = pygame.image.load(HP_SHIELD).convert_alpha()
 hp_image_s = hp_image.get_size()
@@ -201,13 +212,28 @@ while True:
         pygame.display.flip()
         continue
 
+    if BOSS_FIGHT and len(sprites) == 1:
+        # game over
+        congrats = "Well done, go forth brave apprentice...  Press [ESC]"
+        screen.fill(COLORS['black'])
+        label = myfont.render(congrats, 1, COLORS['white'])
+        screen.blit(label, (200, 200))
+        pygame.display.flip()
+        continue
+
     # simulation stuff goes here (nothing to update yet)
     if enemies_per_stage[stage_index] != 0 and len(sprites) < 2:
-        sprites.append(createMinion(player_s))
+        sprites.append(createEnemy(player_s))
         enemies_per_stage[stage_index] -= 1
         if random.randint(0, 1) == 1 and enemies_per_stage[stage_index] != 0:
-            sprites.append(createMinion(player_s))
+            sprites.append(createEnemy(player_s))
             enemies_per_stage[stage_index] -= 1
+    elif last_stage == stage_index and enemies_per_stage[last_stage] == 0 and \
+         len(sprites) == 1: # only spawn boss once all enemies are gone
+        if not BOSS_FIGHT:
+            sprites.append(createEnemy(player_s, boss=True))
+            BOSS_FIGHT = True
+
     current_tick = pygame.time.get_ticks()
     delta = current_tick - old_tick
     if delta > 100: # prevent huge spikes in acceletation?
@@ -224,10 +250,14 @@ while True:
 
     if keys[pygame.K_a]: # a is currently pressed
         player_s.velocity.x -= 0.002
+        if player_s.velocity.x < -1.0:
+            player_s.velocity.x = -1.0 # set max velocity
         player_s.facing_left = True
         player_s.facing_right = False
     elif keys[pygame.K_d]: # d is currently pressed
         player_s.velocity.x += 0.002
+        if player_s.velocity.x > 1.0:
+            player_s.velocity.x = 1.0
         player_s.facing_right = True
         player_s.facing_left = False
     else:
@@ -242,20 +272,27 @@ while True:
 
     #if len(sprites) == 1: # only player left
     #    # add new minion into game
-    #    sprites.append(createMinion(player_s))
+    #    sprites.append(createEnemy(player_s))
 
     #accel = accel.scale(delta)
     for s in sprites:
         s.update(delta, player_s)
 
+    # check if enemy's attack hit player
     for i in range(1, len(sprites)):
         for f in sprites[i].attack_count:
             f.collision(player_s)
 
+    # check if enemy's attack hit anything other than player
     for i in range(1, len(sprites)):
         for f in sprites[i].attack_count:
             if f.collision_minion(sprites[i]):
-                minions_killed.append(sprites[i])
+                if not BOSS_FIGHT:
+                    minions_killed.append(sprites[i])
+                elif BOSS_FIGHT:
+                    sprites[i].hits -= 1
+                    if sprites[i].hits == 0:
+                        minions_killed.append(sprites[i])
                 continue
 
     for m in minions_killed:

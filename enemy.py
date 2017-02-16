@@ -28,6 +28,7 @@ class Fireball(sprite):
         self.image_l = self.image
         self.image = self.image_r
         self.bounced = False
+        self.fixed = False
 
     def update(self, delta):
         self.position = self.position.add(self.velocity.scale(delta))
@@ -127,3 +128,26 @@ class Minion(Enemy):
             for r in to_remove:
                 self.attack_count.remove(r)
             
+class Boss(Minion):
+    def __init__(self, filename, pos, vel):
+        super(Boss, self).__init__(filename, pos, vel)
+        self.load_image(filename, (160, 110))
+        self.image_l = self.flip_image()
+        self.image_r = self.image
+        if vel.x > 0:
+            self.image = self.image_r
+        else:
+            self.image = self.image_l
+        self.hits = 20
+
+    def attack(self, player_sprite):
+        super(Boss, self).attack(player_sprite)
+        for i in range(len(self.attack_count)):
+            if not self.attack_count[i].fixed:
+                self.attack_count[i].position.y += 20
+                self.attack_count[i].fixed = True
+
+    def collision(self, other):
+        original_pos = self.position.add(vector2(0, 0))
+        super(Boss, self).collision(other)
+        self.position.y = original_pos.y

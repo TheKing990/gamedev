@@ -47,6 +47,8 @@ class vector2:
 
     def normalize(self):
         mag = self.magnitude()
+        if mag == 0:
+            return vector2(0, 0)
         v = vector2(self.x / float(mag), self.y / float(mag))
         return v
 
@@ -267,7 +269,12 @@ class player(sprite):
 
 
     def collision(self, other):
-        cn = self.position.subtract(other.position)
+        if hasattr(other, "hits"): # if final boss, make y pos the same
+            # boss is on higher ground so we have to lower it for correct
+            # collision
+            cn = self.position.subtract(vector2(other.position.x, self.position.y))
+        else:
+            cn = self.position.subtract(other.position)
         dist = cn.magnitude()
         if dist < (self.radius + other.radius): # collision?
             scale_factor = 0.5 * ((self.radius + other.radius) - dist)
