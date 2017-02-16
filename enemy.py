@@ -53,6 +53,7 @@ class Fireball(sprite):
                 # move fireball offscreen and wait to be removed from list
                 self.position.x = -self.size[0] - 10
                 other.hits += 1
+                other.sdx.play()
         if other.hero_mode:
             other.hits = 0
 

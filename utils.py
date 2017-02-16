@@ -142,7 +142,7 @@ class sprite(object):
 
 class player(sprite):
     NEXT_WIN = False
-    def __init__(self, img_fn, pos, vel, name=None):
+    def __init__(self, img_fn, pos, vel, sdx=None, name=None):
         if name:
             self.name = name
         else:
@@ -186,6 +186,7 @@ class player(sprite):
         self.current_frame = 0
 
         self.hits = 0
+        self.sdx = sdx
 
 
 
@@ -293,6 +294,7 @@ class player(sprite):
             self.velocity = vt_s.add(vn_o)
             other.velocity = vt_o.add(vn_s)
             if not self.shield:
+                self.sdx.play()
                 self.hits = 15
         if self.hero_mode:
             self.hits = 0

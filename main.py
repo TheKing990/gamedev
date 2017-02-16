@@ -128,6 +128,8 @@ myfont = pygame.font.SysFont("monospace", 24)
 screen = pygame.display.set_mode(SCREEN_SIZE) #, pygame.FULLSCREEN)
 pygame.display.set_caption("The Apprentice")
 
+# damage_taken.wav borrowed from: http://soundbible.com/995-Jab.html
+damage_taken = pygame.mixer.Sound("music/damage_taken.wav")
 pygame.mixer.music.load("music/title_screen.mp3")
 pygame.mixer.music.play(-1)
 
@@ -139,6 +141,7 @@ forest = loadbackground(BACKGROUND_F)
 castle = loadbackground(BACKGROUND_C)
 
 stage_parts = [forest, forest, forest, forest, forest, forest]
+enemies_per_stage = [0, 10, 14, 12, 12, 15, 18]
 stage_index = 0
 win_background = stage_parts[stage_index]
 hp_image = pygame.image.load(HP_SHIELD).convert_alpha()
@@ -157,11 +160,9 @@ hp_image3 = pygame.transform.scale(hp_image3,
 hp_imgs = [hp_image, hp_image2, hp_image3]
 
 sprites = [player(WIZARD_FILE, vector2(50, GROUND),
-                  vector2(0, 0), name="Player")
+                  vector2(0, 0), sdx=damage_taken, name="Player")
 ]
 player_s = sprites[0]
-sprites.append(createMinion(player_s))
-sprites.append(createMinion(player_s))
 minions_killed = []
 
 old_tick = pygame.time.get_ticks()
@@ -197,6 +198,12 @@ while True:
         continue
 
     # simulation stuff goes here (nothing to update yet)
+    if enemies_per_stage[stage_index] != 0 and len(sprites) < 2:
+        sprites.append(createMinion(player_s))
+        enemies_per_stage[stage_index] -= 1
+        if random.randint(0, 1) == 1 and enemies_per_stage[stage_index] != 0:
+            sprites.append(createMinion(player_s))
+            enemies_per_stage[stage_index] -= 1
     current_tick = pygame.time.get_ticks()
     delta = current_tick - old_tick
     if delta > 100: # prevent huge spikes in acceletation?
@@ -229,9 +236,9 @@ while True:
             if player_s.velocity.x > 0:
                 player_s.velocity.x = 0
 
-    if len(sprites) == 1: # only player left
-        # add new minion into game
-        sprites.append(createMinion(player_s))
+    #if len(sprites) == 1: # only player left
+    #    # add new minion into game
+    #    sprites.append(createMinion(player_s))
 
     #accel = accel.scale(delta)
     for s in sprites:
