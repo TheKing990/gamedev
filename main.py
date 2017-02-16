@@ -31,10 +31,11 @@ LEFT_EDGE = 0
 RIGHT_EDGE = SCREEN_SIZE[0]
 MIDDLE = SCREEN_SIZE[0] / 2
 
-GROUND = 600
+GROUND = 575
 WIZARD_FILE = 'art/apprentice_moves/move1.png' # 'art/Wizard_Male.png'
 MINION_FILE = 'art/Retrowizard_evil.png'
-BACKGROUND_F = 'art/forest.png'
+TITLE_SCREEN = 'art/title_screen.png'
+BACKGROUND_F = 'art/forest1.png'
 BACKGROUND_C = 'art/castle.png'
 HP_SHIELD = 'art/HP_Shield33.png'
 HP_SHIELD2 = 'art/HP_Shield23.png'
@@ -73,12 +74,12 @@ def displayHP(screen, hp_left, hp_img):
     col = 1
     while hp_left > 2:
         x = SCREEN_SIZE[0] - ((w + 4) * col) - 10
-        y = 20 + (h + 4)
+        y = SCREEN_SIZE[1] - (h + 4) - 5
         screen.blit(hp_img[0], (x, y))
         col += 1
         hp_left = hp_left - 3
     x = SCREEN_SIZE[0] - ((w + 4) * col + 1) - 10
-    y = 20 + (h + 4)
+    y = SCREEN_SIZE[1] - (h + 4) - 5
     if hp_left == 2:
         screen.blit(hp_img[1], (x, y))
     elif hp_left == 1:
@@ -139,6 +140,7 @@ accel = vector2(0.025, 0)
 
 forest = loadbackground(BACKGROUND_F)
 castle = loadbackground(BACKGROUND_C)
+title = loadbackground(TITLE_SCREEN)
 
 stage_parts = [forest, forest, forest, forest, forest, forest]
 enemies_per_stage = [0, 10, 14, 12, 12, 15, 18]
@@ -147,16 +149,16 @@ win_background = stage_parts[stage_index]
 hp_image = pygame.image.load(HP_SHIELD).convert_alpha()
 hp_image_s = hp_image.get_size()
 hp_image = pygame.transform.scale(hp_image,
-                                  (int(hp_image_s[0] * 0.07),
-                                   int(hp_image_s[1] * 0.07)))
+                                  (int(hp_image_s[0] * 0.05),
+                                   int(hp_image_s[1] * 0.05)))
 hp_image2 = pygame.image.load(HP_SHIELD2).convert_alpha()
 hp_image2 = pygame.transform.scale(hp_image2,
-                                  (int(hp_image_s[0] * 0.07),
-                                   int(hp_image_s[1] * 0.07)))
+                                  (int(hp_image_s[0] * 0.05),
+                                   int(hp_image_s[1] * 0.05)))
 hp_image3 = pygame.image.load(HP_SHIELD3).convert_alpha()
 hp_image3 = pygame.transform.scale(hp_image3,
-                                   (int(hp_image_s[0] * 0.07),
-                                    int(hp_image_s[1] * 0.07)))
+                                   (int(hp_image_s[0] * 0.05),
+                                    int(hp_image_s[1] * 0.05)))
 hp_imgs = [hp_image, hp_image2, hp_image3]
 
 sprites = [player(WIZARD_FILE, vector2(50, GROUND),
@@ -187,6 +189,8 @@ while True:
 
     if title_screen:
         # show title screen
+        screen.blit(title, (0, 0))
+        pygame.display.flip()
         continue
 
     if player_s.hits >= 15:
