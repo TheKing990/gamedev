@@ -141,6 +141,7 @@ class sprite(object):
         screen.blit(self.image, (self.position.x, self.position.y))
 
 class player(sprite):
+    NEXT_WIN = False
     def __init__(self, img_fn, pos, vel, name=None):
         if name:
             self.name = name
@@ -156,6 +157,7 @@ class player(sprite):
         self.position = vector2(pos.x, pos.y)
         self.velocity = vector2(vel.x, vel.y)
         self.color = [0, 0, 0]
+        self.hero_mode = False # for testing purposes, don't let player die
 
 
         ''' things you need for the shield '''
@@ -241,8 +243,9 @@ class player(sprite):
             s_left = self.position.x
 
         if s_right > SS[0]: # right wall
+            player.NEXT_WIN = True
             self.position.x -= s_right - SS[0]
-            #self.velocity.x = -(self.velocity.x)
+        #    #self.velocity.x = -(self.velocity.x)
         if s_left < 0: # left wall
             self.position.x += abs(s_left)
             #self.velocity.x = -(self.velocity.x)
@@ -255,12 +258,11 @@ class player(sprite):
 
         if self.velocity.x > 0:
             self.image_show = self.image_r
-
-
-
         elif self.velocity.x < 0:
             self.image_show = self.image_l
 
+        if self.hero_mode:
+            self.hits = 0
 
 
     def collision(self, other):
@@ -292,6 +294,8 @@ class player(sprite):
             other.velocity = vt_o.add(vn_s)
             if not self.shield:
                 self.hits = 15
+        if self.hero_mode:
+            self.hits = 0
 
     def draw(self, screen):
         if self.shield:

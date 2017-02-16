@@ -53,6 +53,8 @@ class Fireball(sprite):
                 # move fireball offscreen and wait to be removed from list
                 self.position.x = -self.size[0] - 10
                 other.hits += 1
+        if other.hero_mode:
+            other.hits = 0
 
     def collision_minion(self, other):
         level_pos = self.position.add(vector2(0, 0)) # copy pos vector
@@ -93,8 +95,9 @@ class Minion(Enemy):
 
     def draw(self, screen):
         super(Enemy, self).draw(screen)
-        for fire in self.attack_count:
-            fire.draw(screen)
+        if not player.NEXT_WIN:
+            for fire in self.attack_count:
+                fire.draw(screen)
 
     def attack(self, player_sprite):
         # if enemy can attack, attack
