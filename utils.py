@@ -75,7 +75,7 @@ class sprite(object):
             self.image = pygame.transform.scale(self.image, (75, 75))
             self.size = self.image.get_size()
             self.radius = math.sqrt((self.size[0] ** 2) + (self.size[1] ** 2))
-            self.radius = int(self.radius / 2) - 1 # make radius smaller
+            self.radius = int(self.radius / 3) - 1 # make radius smaller
 
         self.position = vector2(pos.x, pos.y)
         self.velocity = vector2(vel.x, vel.y)
@@ -92,6 +92,12 @@ class sprite(object):
     def flip_image(self):
         return pygame.transform.flip(self.image, True, False)
 
+    def pic_center(self):
+        size = self.image.get_size()
+        center = (int(self.position.x + (size[0] / 2)),
+                  int(self.position.y + (size[1] / 2))
+                  )
+        return center
 
     def update(self, delta, player=None):
         self.position = self.position.add(self.velocity.scale(delta))
@@ -112,7 +118,10 @@ class sprite(object):
             self.position.y = 0
 
     def collision(self, other):
-        cn = self.position.subtract(other.position)
+        #cn = self.position.subtract(other.position)
+        center = self.pic_center()
+        other_center = other.pic_center()
+        cn = vector2(center[0], center[1]).subtract(vector2(other_center[0], other_center[1]))
         dist = cn.magnitude()
         if dist < (self.radius + other.radius): # collision?
             scale_factor = 0.5 * ((self.radius + other.radius) - dist)
@@ -140,6 +149,9 @@ class sprite(object):
             other.velocity = vt_o.add(vn_s)
 
     def draw(self, screen):
+        pygame.draw.circle(screen, (255, 0, 0),
+                           self.pic_center(),
+                           self.radius, 2)
         screen.blit(self.image, (self.position.x, self.position.y))
 
 class player(sprite):
@@ -155,7 +167,7 @@ class player(sprite):
         self.image_show = self.image_r
         self.size = self.image_l.get_size()
         self.radius = math.sqrt((self.size[0] ** 2) + (self.size[1] ** 2))
-        self.radius = int(self.radius / 2)
+        self.radius = int(self.radius / 3)
         self.position = vector2(pos.x, pos.y)
         self.velocity = vector2(vel.x, vel.y)
         self.color = [0, 0, 0]
@@ -269,12 +281,16 @@ class player(sprite):
 
 
     def collision(self, other):
+        center = self.pic_center()
         if hasattr(other, "hits"): # if final boss, make y pos the same
             # boss is on higher ground so we have to lower it for correct
             # collision
-            cn = self.position.subtract(vector2(other.position.x, self.position.y))
+            #cn = self.position.subtract(vector2(other.position.x, self.position.y))
+            cn = vector2(center[0], center[1]).subtract(vector2(other.pic_center()[0], center[1]))
         else:
-            cn = self.position.subtract(other.position)
+            other_center = other.pic_center()
+            cn = vector2(center[0], center[1]).subtract(vector2(other_center[0], other_center[1]))
+            #cn = self.position.subtract(other.position)
         dist = cn.magnitude()
         if dist < (self.radius + other.radius): # collision?
             scale_factor = 0.5 * ((self.radius + other.radius) - dist)
@@ -307,6 +323,9 @@ class player(sprite):
             self.hits = 0
 
     def draw(self, screen):
+        pygame.draw.circle(screen, (255, 0, 0),
+                           self.pic_center(),
+                           self.radius, 2)
         if self.shield:
             screen.blit(self.shield_current_Image, (self.position.x, self.position.y))
         else:

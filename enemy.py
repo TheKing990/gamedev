@@ -39,9 +39,14 @@ class Fireball(sprite):
             self.image = self.image_l
 
     def collision(self, other):
-        level_pos = self.position.add(vector2(0, 0)) # copy pos vector
-        level_pos.y = other.position.y # don't change y, only x
-        cn = level_pos.subtract(other.position)
+        #level_pos = self.position.add(vector2(0, 0)) # copy pos vector
+        center = self.pic_center()
+        level_pos = vector2(center[0], center[1])
+        #level_pos.y = other.position.y # don't change y, only x
+        level_pos.y = other.pic_center()[1]
+        #cn = level_pos.subtract(other.position)
+        other_center = other.pic_center()
+        cn = level_pos.subtract(vector2(other_center[0], other_center[1]))
         dist = cn.magnitude()
         if dist < (self.radius + other.radius): # collision
             if other.shield:
