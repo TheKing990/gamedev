@@ -36,6 +36,7 @@ WIZARD_FILE = 'art/apprentice_moves/move1.png' # 'art/Wizard_Male.png'
 MINION_FILE = 'art/Retrowizard_evil.png'
 BOSS_FILE = 'art/wolf.png'
 TITLE_SCREEN = 'art/title_screen.png'
+STORY_CONTROLS = 'art/story_controls.png'
 BACKGROUND_F = 'art/forest1.png'
 BACKGROUND_C = 'art/castle.png'
 HP_SHIELD = 'art/HP_Shield33.png'
@@ -149,6 +150,7 @@ accel = vector2(0.005, 0)
 forest = loadbackground(BACKGROUND_F)
 castle = loadbackground(BACKGROUND_C)
 title = loadbackground(TITLE_SCREEN)
+pregame = loadbackground(STORY_CONTROLS)
 
 stage_parts = [forest, forest, forest, forest, forest, forest]
 enemies_per_stage = [0, 10, 14, 12, 12, 15, 18]
@@ -181,6 +183,7 @@ minions_killed = []
 old_tick = pygame.time.get_ticks()
 
 title_screen = True
+back_story = False
 while True:
     # get user events
     pygame.event.pump()
@@ -192,15 +195,24 @@ while True:
             pygame.quit()
             sys.exit()
         elif evt.type == pygame.KEYDOWN and evt.key == pygame.K_c:
-            title_screen = False
-            pygame.mixer.music.fadeout(500)
-            pygame.mixer.music.load("music/forest.mp3")
-            pygame.mixer.music.play(-1)
-            #pygame.mixer.stop()
+            if title_screen:
+                title_screen = False
+                back_story = True
+            elif back_story:
+                back_story = False
+                pygame.mixer.music.fadeout(500)
+                pygame.mixer.music.load("music/forest.mp3")
+                pygame.mixer.music.play(-1)
+                #pygame.mixer.stop()
 
     if title_screen:
         # show title screen
         screen.blit(title, (0, 0))
+        pygame.display.flip()
+        continue
+
+    if back_story:
+        screen.blit(pregame, (0, 0))
         pygame.display.flip()
         continue
 
