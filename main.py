@@ -18,18 +18,6 @@ COLORS = {
     'white' : (255, 255, 255),
     'black' : (0, 0, 0)
 }
-PLACES = {
-    'topleft' : (0, 0),
-    'topright' : (SCREEN_SIZE[0], 0),
-    'bottomleft' : (0, SCREEN_SIZE[1]),
-    'bottomright' : (SCREEN_SIZE[0], SCREEN_SIZE[1]),
-    'center' : (SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 2)
-}
-
-# camera movement variables
-LEFT_EDGE = 0
-RIGHT_EDGE = SCREEN_SIZE[0]
-MIDDLE = SCREEN_SIZE[0] / 2
 
 GROUND = 575
 WIZARD_FILE = 'art/apprentice_moves/move1.png' # 'art/Wizard_Male.png'
@@ -43,6 +31,8 @@ HP_SHIELD = 'art/HP_Shield33.png'
 HP_SHIELD2 = 'art/HP_Shield23.png'
 HP_SHIELD3 = 'art/HP_Shield13.png'
 GAME_OVER_STR = "Game Over! Press [ESC] to quit."
+
+reset = False
 
 def loadbackground(b_image):
     bg = pygame.image.load(b_image).convert()
@@ -135,30 +125,6 @@ myfont = pygame.font.SysFont("monospace", 24)
 screen = pygame.display.set_mode(SCREEN_SIZE) #, pygame.FULLSCREEN)
 pygame.display.set_caption("The Apprentice")
 
-# damage_taken.wav borrowed from: http://soundbible.com/995-Jab.html
-damage_taken = pygame.mixer.Sound("music/damage_taken.wav")
-# howling.wav borrowed from: http://soundbible.com/130-Werewolf-Howl.html
-howling = pygame.mixer.Sound("music/howling.wav")
-
-pygame.mixer.music.load("music/title_screen.mp3")
-pygame.mixer.music.play(-1)
-
-clock = pygame.time.Clock()
-
-accel = vector2(0.005, 0)
-
-forest = loadbackground(BACKGROUND_F)
-castle = loadbackground(BACKGROUND_C)
-title = loadbackground(TITLE_SCREEN)
-pregame = loadbackground(STORY_CONTROLS)
-
-stage_parts = [forest, forest, forest, forest, forest, forest]
-enemies_per_stage = [0, 10, 14, 12, 12, 15, 18]
-stage_index = 0
-last_stage = len(stage_parts) - 1
-BOSS_FIGHT = False
-
-win_background = stage_parts[stage_index]
 hp_image = pygame.image.load(HP_SHIELD).convert_alpha()
 hp_image_s = hp_image.get_size()
 hp_image = pygame.transform.scale(hp_image,
@@ -174,175 +140,204 @@ hp_image3 = pygame.transform.scale(hp_image3,
                                     int(hp_image_s[1] * 0.05)))
 hp_imgs = [hp_image, hp_image2, hp_image3]
 
-sprites = [player(WIZARD_FILE, vector2(50, GROUND),
-                  vector2(0, 0), sdx=damage_taken, name="Player")
-]
-player_s = sprites[0]
-minions_killed = []
+forest = loadbackground(BACKGROUND_F)
+castle = loadbackground(BACKGROUND_C)
+title = loadbackground(TITLE_SCREEN)
+pregame = loadbackground(STORY_CONTROLS)
 
-old_tick = pygame.time.get_ticks()
+accel = vector2(0.005, 0)
 
-title_screen = True
-back_story = False
-while True:
-    # get user events
-    pygame.event.pump()
-    for evt in pygame.event.get():
-        if evt.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
-        elif evt.type == pygame.KEYDOWN and evt.key == pygame.K_ESCAPE:
-            pygame.quit()
-            sys.exit()
-        elif evt.type == pygame.KEYDOWN and evt.key == pygame.K_c:
-            if title_screen:
-                title_screen = False
-                back_story = True
-            elif back_story:
-                back_story = False
-                pygame.mixer.music.fadeout(500)
-                pygame.mixer.music.load("music/forest.mp3")
-                pygame.mixer.music.play(-1)
-                #pygame.mixer.stop()
+# damage_taken.wav borrowed from: http://soundbible.com/995-Jab.html
+damage_taken = pygame.mixer.Sound("music/damage_taken.wav")
+# howling.wav borrowed from: http://soundbible.com/130-Werewolf-Howl.html
+howling = pygame.mixer.Sound("music/howling.wav")
 
-    if title_screen:
-        # show title screen
-        screen.blit(title, (0, 0))
-        pygame.display.flip()
-        continue
+def play_game():
+    pygame.mixer.music.load("music/title_screen.mp3")
+    pygame.mixer.music.play(-1)
 
-    if back_story:
-        screen.blit(pregame, (0, 0))
-        pygame.display.flip()
-        continue
+    stage_parts = [forest, forest, forest, forest, forest, forest]
+    enemies_per_stage = [0, 10, 14, 12, 12, 15, 18]
+    stage_index = 0
+    last_stage = len(stage_parts) - 1
+    BOSS_FIGHT = False
 
-    if player_s.hits >= 15:
-        # game over
-        screen.fill(COLORS['black'])
-        label = myfont.render(GAME_OVER_STR, 1, COLORS['white'])
-        screen.blit(label, (200, 200))
-        pygame.display.flip()
-        continue
+    win_background = stage_parts[stage_index]
 
-    if BOSS_FIGHT and len(sprites) == 1:
-        # game over
-        congrats = "Well done, go forth brave apprentice...  Press [ESC]"
-        screen.fill(COLORS['black'])
-        label = myfont.render(congrats, 1, COLORS['white'])
-        screen.blit(label, (200, 200))
-        pygame.display.flip()
-        continue
+    sprites = [player(WIZARD_FILE, vector2(50, GROUND),
+                      vector2(0, 0), sdx=damage_taken, name="Player")
+    ]
+    player_s = sprites[0]
+    minions_killed = []
 
-    # simulation stuff goes here (nothing to update yet)
-    if enemies_per_stage[stage_index] != 0 and len(sprites) < 2:
-        sprites.append(createEnemy(player_s))
-        enemies_per_stage[stage_index] -= 1
-        if random.randint(0, 1) == 1 and enemies_per_stage[stage_index] != 0:
+    old_tick = pygame.time.get_ticks()
+
+    title_screen = True
+    back_story = False
+    while True:
+        # get user events
+        pygame.event.pump()
+        for evt in pygame.event.get():
+            if evt.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif evt.type == pygame.KEYDOWN and evt.key == pygame.K_ESCAPE:
+                return
+            elif evt.type == pygame.KEYDOWN and evt.key == pygame.K_F12:
+                return
+            elif evt.type == pygame.KEYDOWN and evt.key == pygame.K_c:
+                if title_screen:
+                    title_screen = False
+                    back_story = True
+                elif back_story:
+                    back_story = False
+                    pygame.mixer.music.fadeout(500)
+                    pygame.mixer.music.load("music/forest.mp3")
+                    pygame.mixer.music.play(-1)
+                    #pygame.mixer.stop()
+
+        if title_screen:
+            # show title screen
+            screen.blit(title, (0, 0))
+            pygame.display.flip()
+            continue
+
+        if back_story:
+            screen.blit(pregame, (0, 0))
+            pygame.display.flip()
+            continue
+
+        if player_s.hits >= 15:
+            # game over
+            screen.fill(COLORS['black'])
+            label = myfont.render(GAME_OVER_STR, 1, COLORS['white'])
+            screen.blit(label, (200, 200))
+            pygame.display.flip()
+            continue
+
+        if BOSS_FIGHT and len(sprites) == 1:
+            # game over
+            congrats = "Well done, go forth brave apprentice...  "
+            congrats = "Press c to continue"
+            screen.fill(COLORS['black'])
+            label = myfont.render(congrats, 1, COLORS['white'])
+            screen.blit(label, (200, 200))
+            pygame.display.flip()
+            continue
+
+        # simulation stuff goes here (nothing to update yet)
+        if enemies_per_stage[stage_index] != 0 and len(sprites) < 2:
             sprites.append(createEnemy(player_s))
             enemies_per_stage[stage_index] -= 1
-    elif last_stage == stage_index and enemies_per_stage[last_stage] == 0 and \
-         len(sprites) == 1: # only spawn boss once all enemies are gone
-        if not BOSS_FIGHT:
-            sprites.append(createEnemy(player_s, boss=True))
-            BOSS_FIGHT = True
+            if random.randint(0, 1) == 1 and enemies_per_stage[stage_index] != 0:
+                sprites.append(createEnemy(player_s))
+                enemies_per_stage[stage_index] -= 1
+        elif last_stage == stage_index and enemies_per_stage[last_stage] == 0 and \
+             len(sprites) == 1: # only spawn boss once all enemies are gone
+            if not BOSS_FIGHT:
+                sprites.append(createEnemy(player_s, boss=True))
+                BOSS_FIGHT = True
 
-    current_tick = pygame.time.get_ticks()
-    delta = current_tick - old_tick
-    if delta > 100: # prevent huge spikes in acceletation?
-        old_tick = pygame.time.get_ticks()
-        continue
+        current_tick = pygame.time.get_ticks()
+        delta = current_tick - old_tick
+        if delta > 100: # prevent huge spikes in acceletation?
+            old_tick = pygame.time.get_ticks()
+            continue
 
-    keys = pygame.key.get_pressed()
+        keys = pygame.key.get_pressed()
 
-    if keys[pygame.K_SPACE]:
-        player_s.shield = True
-    else:
-        player_s.shield = False
-        player_s.shiled_hold = False
-
-    if keys[pygame.K_a]: # a is currently pressed
-        player_s.velocity.x -= 0.002
-        if player_s.velocity.x < -1.0:
-            player_s.velocity.x = -1.0 # set max velocity
-        player_s.facing_left = True
-        player_s.facing_right = False
-    elif keys[pygame.K_d]: # d is currently pressed
-        player_s.velocity.x += 0.002
-        if player_s.velocity.x > 1.0:
-            player_s.velocity.x = 1.0
-        player_s.facing_right = True
-        player_s.facing_left = False
-    else:
-        if player_s.velocity.x > 0:
-            player_s.velocity.x -= accel.scale(delta).x
-            if player_s.velocity.x < 0:
-                player_s.velocity.x = 0
-        elif player_s.velocity.x < 0:
-            player_s.velocity.x += accel.scale(delta).x
-            if player_s.velocity.x > 0:
-                player_s.velocity.x = 0
-
-    #if len(sprites) == 1: # only player left
-    #    # add new minion into game
-    #    sprites.append(createEnemy(player_s))
-
-    #accel = accel.scale(delta)
-    for s in sprites:
-        s.update(delta, player_s)
-
-    # check if enemy's attack hit player
-    for i in range(1, len(sprites)):
-        for f in sprites[i].attack_count:
-            f.collision(player_s)
-
-    # check if enemy's attack hit anything other than player
-    for i in range(1, len(sprites)):
-        for f in sprites[i].attack_count:
-            if f.collision_minion(sprites[i]):
-                if not BOSS_FIGHT:
-                    minions_killed.append(sprites[i])
-                elif BOSS_FIGHT:
-                    sprites[i].hits -= 1
-                    if sprites[i].hits == 0:
-                        minions_killed.append(sprites[i])
-                continue
-
-    for m in minions_killed:
-        sprites.remove(m)
-    minions_killed = [] # reset list
-
-    for i in range(0, len(sprites)):
-        for other in sprites[i + 1:]:
-            sprites[i].collision(other)
-
-    # draw to screen and flip
-    screen.blit(win_background, (0, 0))
-    for s in sprites:
-        s.draw(screen)
-
-    hp_left = 15 - player_s.hits
-    if hp_left <= 0:
-        hp_left = 0
-        pygame.mixer.music.fadeout(500)
-        pygame.mixer.music.load("music/game_over.mp3")
-        pygame.mixer.music.play(-1)
-    displayHP(screen, hp_left, hp_imgs)
-
-    pygame.display.flip()
-
-    if player.NEXT_WIN:
-        if stage_index < len(stage_parts) - 1:
-            for i in range(1, len(sprites)):
-                minions_killed.append(sprites[i])
-            win_background = next_win(stage_parts[stage_index],
-                                      stage_parts[stage_index + 1],
-                                      screen, sprites)
-            player.NEXT_WIN = False
-            for m in minions_killed:
-                sprites.remove(m)
-            minions_killed = []
-            stage_index += 1
+        if keys[pygame.K_SPACE]:
+            player_s.shield = True
         else:
-            player.NEXT_WIN = False
-        
-    old_tick = current_tick # pygame.time.get_ticks()
+            player_s.shield = False
+            player_s.shiled_hold = False
+
+        if keys[pygame.K_a]: # a is currently pressed
+            player_s.velocity.x -= 0.002
+            if player_s.velocity.x < -1.0:
+                player_s.velocity.x = -1.0 # set max velocity
+            player_s.facing_left = True
+            player_s.facing_right = False
+        elif keys[pygame.K_d]: # d is currently pressed
+            player_s.velocity.x += 0.002
+            if player_s.velocity.x > 1.0:
+                player_s.velocity.x = 1.0
+            player_s.facing_right = True
+            player_s.facing_left = False
+        else:
+            if player_s.velocity.x > 0:
+                player_s.velocity.x -= accel.scale(delta).x
+                if player_s.velocity.x < 0:
+                    player_s.velocity.x = 0
+            elif player_s.velocity.x < 0:
+                player_s.velocity.x += accel.scale(delta).x
+                if player_s.velocity.x > 0:
+                    player_s.velocity.x = 0
+
+        #if len(sprites) == 1: # only player left
+        #    # add new minion into game
+        #    sprites.append(createEnemy(player_s))
+
+        #accel = accel.scale(delta)
+        for s in sprites:
+            s.update(delta, player_s)
+
+        # check if enemy's attack hit player
+        for i in range(1, len(sprites)):
+            for f in sprites[i].attack_count:
+                f.collision(player_s)
+
+        # check if enemy's attack hit anything other than player
+        for i in range(1, len(sprites)):
+            for f in sprites[i].attack_count:
+                if f.collision_minion(sprites[i]):
+                    if not BOSS_FIGHT:
+                        minions_killed.append(sprites[i])
+                    elif BOSS_FIGHT:
+                        sprites[i].hits -= 1
+                        if sprites[i].hits == 0:
+                            minions_killed.append(sprites[i])
+                    continue
+
+        for m in minions_killed:
+            sprites.remove(m)
+        minions_killed = [] # reset list
+
+        for i in range(0, len(sprites)):
+            for other in sprites[i + 1:]:
+                sprites[i].collision(other)
+
+        # draw to screen and flip
+        screen.blit(win_background, (0, 0))
+        for s in sprites:
+            s.draw(screen)
+
+        hp_left = 15 - player_s.hits
+        if hp_left <= 0:
+            hp_left = 0
+            pygame.mixer.music.fadeout(500)
+            pygame.mixer.music.load("music/game_over.mp3")
+            pygame.mixer.music.play(-1)
+        displayHP(screen, hp_left, hp_imgs)
+
+        pygame.display.flip()
+
+        if player.NEXT_WIN:
+            if stage_index < len(stage_parts) - 1:
+                for i in range(1, len(sprites)):
+                    minions_killed.append(sprites[i])
+                win_background = next_win(stage_parts[stage_index],
+                                          stage_parts[stage_index + 1],
+                                          screen, sprites)
+                player.NEXT_WIN = False
+                for m in minions_killed:
+                    sprites.remove(m)
+                minions_killed = []
+                stage_index += 1
+            else:
+                player.NEXT_WIN = False
+            
+        old_tick = current_tick # pygame.time.get_ticks()
+
+while "Game is fun":
+    play_game()

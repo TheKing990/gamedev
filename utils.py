@@ -75,7 +75,7 @@ class sprite(object):
             self.image = pygame.transform.scale(self.image, (75, 75))
             self.size = self.image.get_size()
             self.radius = math.sqrt((self.size[0] ** 2) + (self.size[1] ** 2))
-            self.radius = int(self.radius / 3) - 1 # make radius smaller
+            self.radius = int(self.radius / 4) - 1 # make radius smaller
 
         self.position = vector2(pos.x, pos.y)
         self.velocity = vector2(vel.x, vel.y)
@@ -151,7 +151,7 @@ class sprite(object):
     def draw(self, screen):
         pygame.draw.circle(screen, (255, 0, 0),
                            self.pic_center(),
-                           self.radius, 2)
+                           int(self.radius), 2)
         screen.blit(self.image, (self.position.x, self.position.y))
 
 class player(sprite):
@@ -167,7 +167,7 @@ class player(sprite):
         self.image_show = self.image_r
         self.size = self.image_l.get_size()
         self.radius = math.sqrt((self.size[0] ** 2) + (self.size[1] ** 2))
-        self.radius = int(self.radius / 3)
+        self.radius = int((self.radius / 3) * 0.75)
         self.position = vector2(pos.x, pos.y)
         self.velocity = vector2(vel.x, vel.y)
         self.color = [0, 0, 0]

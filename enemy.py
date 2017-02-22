@@ -29,6 +29,7 @@ class Fireball(sprite):
         self.image = self.image_r
         self.bounced = False
         self.fixed = False
+        self.radius = self.radius * 0.75
 
     def update(self, delta):
         self.position = self.position.add(self.velocity.scale(delta))
@@ -64,9 +65,13 @@ class Fireball(sprite):
             other.hits = 0
 
     def collision_minion(self, other):
-        level_pos = self.position.add(vector2(0, 0)) # copy pos vector
-        level_pos.y = other.position.y # don't change y, only x
-        cn = level_pos.subtract(other.position)
+        #level_pos = self.position.add(vector2(0, 0)) # copy pos vector
+        #level_pos.y = other.position.y # don't change y, only x
+        center = self.pic_center()
+        other_center = other.pic_center()
+        level_pos = vector2(center[0], other_center[1])
+        #cn = level_pos.subtract(other.position)
+        cn = level_pos.subtract(vector2(other_center[0], other_center[1]))
         dist = cn.magnitude()
         if dist < (self.radius + other.radius): # collision
             if self.bounced: # player bounced fireball back
@@ -89,6 +94,7 @@ class Minion(Enemy):
             self.image = self.image_l
         self.attack_count = []
         self.attack_max = 1
+        self.radius = self.radius * 0.4
 
     def update(self, delta, player_s=None):
         super(Enemy, self).update(delta)
