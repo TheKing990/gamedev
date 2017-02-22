@@ -180,12 +180,15 @@ class player(sprite):
         self.facing_right = True
         self.facing_left = False
 
+
         self.shield_images = load_Image('art/apprentice_moves/shield/')
         self.shield_sprites = self.shield_images
         self.shield_left_sprites  = flip_array_images(self.shield_images)
         self.index = 0
         self.shield_current_Image = self.shield_images[self.index]
         '''end of shield'''
+        ''' current image for all animation'''
+        self.current_image =  self.shield_current_Image
 
         '''moving normal without shield'''
         self.walk_images = load_Image('art/apprentice_moves/normal_move/')
@@ -237,14 +240,28 @@ class player(sprite):
         if self.current_frame >= self.animation_frames:
             self.current_frame = 0
 
-            if self.shiled_hold != True:
+            #if the character is not moving but having the shield on
+            if self.shiled_hold != True and self.facing_right == False and self.facing_left == False:
                 self.index = (self.index + 1) % len(self.shield_images)
                 if self.index == 2:
 
-                    self.shield_current_Image = self.shield_images[2]
+                    self.current_image = self.shield_images[2]
+
                     self.shiled_hold = True
                 else:
-                    self.shield_current_Image = self.shield_images[self.index]
+                    self.current_image = self.shield_images[self.index]
+
+            #if the player is is moving to the righ but not using the shield
+            if self.facing_right == True and self.shiled_hold == False:
+                self.index = (self.index + 1) % len(self.walk_images)
+                self.current_image = self.walk_images[self.index]
+
+            #if the player is moving to the left and not using the shield
+            if self.facing_left == True and self.shiled_hold == False:
+                self.index = (self.index + 1) % len(self.walk_left)
+                self.current_image = self.walk_left[self.index]
+
+
 
         if self.shield:
             s_top = center[1] - self.radius
