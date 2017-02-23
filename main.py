@@ -20,7 +20,7 @@ COLORS = {
 }
 
 GROUND = 575
-WIZARD_FILE = 'art/apprentice_moves/move1.png' # 'art/Wizard_Male.png'
+WIZARD_FILE = 'art/apprentice_moves/normal.png' # 'art/Wizard_Male.png'
 MINION_FILE = 'art/Retrowizard_evil.png'
 BOSS_FILE = 'art/wolf.png'
 TITLE_SCREEN = 'art/title_screen.png'

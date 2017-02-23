@@ -7,11 +7,11 @@ import os
 SS = (1024, 700)
 
 # puts images in a folder in an array.
-def load_Image(path):
+def load_Image(path, size=(75, 75)):
     images = []
     for files in os.listdir(path):
         image = pygame.image.load(path +files ).convert_alpha()
-        image = pygame.transform.scale(image, (75, 75))
+        image = pygame.transform.scale(image, size)
         images.append(image)
     return images
 # flips images in an array
@@ -162,7 +162,10 @@ class player(sprite):
         else:
             self.name = "Minion"
         self.image = pygame.image.load(img_fn).convert_alpha()
-        self.image_r = pygame.transform.scale(self.image, (75, 75))
+        size = self.image.get_size()
+        self.image_r = pygame.transform.scale(self.image,
+                                              (int(size[0] * 0.2),
+                                               int(size[1] * 0.2)))
         self.image_l = pygame.transform.flip(self.image_r, True, False)
         self.image_show = self.image_r
         self.size = self.image_l.get_size()
@@ -180,7 +183,7 @@ class player(sprite):
         self.facing_right = True
         self.facing_left = False
 
-        self.shield_images = load_Image('art/apprentice_moves/shield/')
+        self.shield_images = load_Image('art/apprentice_moves/shield/', self.size)
         self.shield_sprites = self.shield_images
         self.shield_left_sprites  = flip_array_images(self.shield_images)
         self.index = 0
@@ -188,7 +191,7 @@ class player(sprite):
         '''end of shield'''
 
         '''moving normal without shield'''
-        self.walk_images = load_Image('art/apprentice_moves/normal_move/')
+        self.walk_images = load_Image('art/apprentice_moves/normal_move/', self.size)
         self.walk_right = self.walk_images
         self.walk_left = flip_array_images(self.walk_images)
         self.walking_index = 0
@@ -196,7 +199,7 @@ class player(sprite):
 
         self.animation_time = 0.1
         self.current_time = 0
-        self.animation_frames = 50
+        self.animation_frames = 75
         self.current_frame = 0
 
         self.hits = 0
