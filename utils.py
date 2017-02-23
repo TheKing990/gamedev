@@ -129,8 +129,15 @@ class sprite(object):
                 o_radius = other.radius
         else:
             o_radius = other.radius
-        if dist < (self.radius + o_radius): # collision?
-            scale_factor = 0.5 * ((self.radius + o_radius) - dist)
+
+        if hasattr(self, "jumping"):
+            dist = cn.magnitude()
+            radius = self.radius * 0.05
+        else:
+            radius = self.radius
+        
+        if dist < (radius + o_radius): # collision?
+            scale_factor = 0.5 * ((radius + o_radius) - dist)
             diff = cn.normalize().scale(scale_factor)
 
             # move balls away from each other
@@ -155,9 +162,9 @@ class sprite(object):
             other.velocity = vt_o.add(vn_s)
 
     def draw(self, screen):
-        #pygame.draw.circle(screen, (255, 0, 0),
-        #                   self.pic_center(),
-        #                   int(self.radius), 2)
+        pygame.draw.circle(screen, (255, 0, 0),
+                           self.pic_center(),
+                           int(self.radius), 2)
         screen.blit(self.image, (self.position.x, self.position.y))
 
 class player(sprite):
@@ -326,15 +333,23 @@ class player(sprite):
         if hasattr(other, "hits"): # if final boss, make y pos the same
             # boss is on higher ground so we have to lower it for correct
             # collision
-            cn = self.position.subtract(vector2(other.position.x, self.position.y))
-            cn_c = vector2(center[0], center[1]).subtract(vector2(other.pic_center()[0], center[1]))
+            if other.jumping:
+                o_radius = other.radius * 0.5
+                other_center = other.pic_center()
+                cn_c = vector2(center[0], center[1]).subtract(vector2(other_center[0], other_center[1]))
+            else:
+                o_radius = other.radius
+                cn = self.position.subtract(vector2(other.position.x, self.position.y))
+                cn_c = vector2(center[0], center[1]).subtract(vector2(other.pic_center()[0], center[1]))
         else:
             other_center = other.pic_center()
             cn_c = vector2(center[0], center[1]).subtract(vector2(other_center[0], other_center[1]))
             cn = self.position.subtract(other.position)
+            o_radius = other.radius
         dist = cn_c.magnitude()
-        if dist < (radius + other.radius): # collision?
-            scale_factor = 0.5 * ((radius + other.radius) - dist)
+        
+        if dist < (radius + o_radius): # collision?
+            scale_factor = 0.5 * ((radius + o_radius) - dist)
             diff = cn.normalize().scale(scale_factor)
 
             # move balls away from each other
@@ -368,9 +383,9 @@ class player(sprite):
             radius = int(self.radius * 3.5)
         else:
             radius = self.radius
-        #pygame.draw.circle(screen, (255, 0, 0),
-        #                   self.pic_center(),
-        #                   radius, 2)
+        pygame.draw.circle(screen, (255, 0, 0),
+                           self.pic_center(),
+                           radius, 2)
         if self.shield:
             screen.blit(self.shield_current_Image, (self.position.x, self.position.y))
         else:

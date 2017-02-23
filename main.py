@@ -152,7 +152,7 @@ damage_taken = pygame.mixer.Sound("music/damage_taken.wav")
 # howling.wav borrowed from: http://soundbible.com/130-Werewolf-Howl.html
 howling = pygame.mixer.Sound("music/howling.wav")
 
-def play_game():
+def play_game(stage=1):
     pygame.mixer.music.load("music/title_screen.mp3")
     pygame.mixer.music.play(-1)
 
@@ -220,7 +220,7 @@ def play_game():
             congrats += "Press c to continue"
             screen.fill(COLORS['black'])
             label = myfont.render(congrats, 1, COLORS['white'])
-            screen.blit(label, (200, 200))
+            screen.blit(label, (100, 200))
             pygame.display.flip()
             continue
 
@@ -291,7 +291,7 @@ def play_game():
         # check if enemy's attack hit anything other than player
         for i in range(1, len(sprites)):
             for f in sprites[i].attack_count:
-                if f.collision_minion(sprites[i]):
+                if f.collision_minion(sprites[i]): # if fire collides w/ enemy
                     if not BOSS_FIGHT:
                         sprites[i].defeated = True
                         sprites[i].image = sprites[i].animate[0]
@@ -300,17 +300,22 @@ def play_game():
                         sprites[i].hits -= 1
                         if sprites[i].hits == 0:
                             minions_killed.append(sprites[i])
+                        else:
+                            sprites[i].jump()
                     continue
 
+        # if enemy's killed animation is done, remove them from list
         for i in range(1, len(sprites)):
             if hasattr(sprites[i], "defeated"):
                 if sprites[i].defeated and sprites[i].done:
                     minions_killed.append(sprites[i])
 
+        # actually remove enemies from active sprite list
         for m in minions_killed:
             sprites.remove(m)
         minions_killed = [] # reset list
 
+        # check for collisions between player and enemies (not enemy's attack)
         for i in range(0, len(sprites)):
             for other in sprites[i + 1:]:
                 if hasattr(other, "defeated") and not other.defeated:

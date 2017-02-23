@@ -77,6 +77,7 @@ class Fireball(sprite):
             if self.bounced: # player bounced fireball back
                 # move fireball offscreen and wait to be removed from list
                 self.position.x = -self.size[0] - 10
+                self.velocity.x = 0 # stop fireball to keep it offscreen
                 return True
         
 class Minion(Enemy):
@@ -145,6 +146,8 @@ class Minion(Enemy):
                 fire.draw(screen)
 
     def attack(self, player_sprite):
+        if hasattr(self, "jumping") and self.jumping:
+            return
         # if enemy can attack, attack
         if len(self.attack_count) < self.attack_max:
             player_is_in_front = False
@@ -182,15 +185,34 @@ class Boss(Minion):
         else:
             self.image = self.image_l
         self.hits = 20
+        self.radius = self.radius * 0.75
+        self.ground = self.position.y
+        self.jumping = False
 
     def attack(self, player_sprite):
-        super(Boss, self).attack(player_sprite)
-        for i in range(len(self.attack_count)):
-            if not self.attack_count[i].fixed:
-                self.attack_count[i].position.y += 20
-                self.attack_count[i].fixed = True
+        if not self.jumping:
+            super(Boss, self).attack(player_sprite)
+            for i in range(len(self.attack_count)):
+                if not self.attack_count[i].fixed:
+                    self.attack_count[i].position.y += 20
+                    self.attack_count[i].fixed = True
 
     def collision(self, other):
         original_pos = self.position.add(vector2(0, 0))
         super(Boss, self).collision(other)
         self.position.y = original_pos.y
+
+    def update(self, delta, player):
+        if self.jumping:
+            self.velocity.y += (delta * 0.001)
+            if self.velocity.y >= 0 and self.position.y >= self.ground + 0.5:
+                self.position.y = self.ground
+                self.velocity.y = 0
+                self.jumping = False
+        super(Boss, self).update(delta, player)
+    
+    def jump(self):
+        self.jumping = True
+        self.velocity.x *= -1
+        self.velocity.y = -0.65
+            
