@@ -179,7 +179,7 @@ class player(sprite):
         self.shiled_hold = False
         self.pressing_righ_hold = False;
         self.pressing_lef_hold = False
-        self.facing_right = True
+        self.facing_right = False
         self.facing_left = False
 
 
@@ -198,6 +198,15 @@ class player(sprite):
         self.walk_left = flip_array_images(self.walk_images)
         self.walking_index = 0
         self.walking_current = self.walk_images[self.walking_index]
+
+        '''moving normal with shield'''
+        self.walk_shield_images = load_Image('art/apprentice_moves/shi+walk/')
+        self.walk_shield_right = self.walk_shield_images
+        self.walk_shield_left = flip_array_images(self.walk_shield_images)
+        self.walking_index = 0
+        self.walking_shield_current = self.walk_images[self.index]
+
+
 
         self.animation_time = 0.1
         self.current_time = 0
@@ -242,26 +251,45 @@ class player(sprite):
         if self.current_frame >= self.animation_frames:
             self.current_frame = 0
 
+            self.index = (self.index + 1) % len(self.shield_images)
+
+            if self.facing_right == True or self.facing_left == True and self.shield == False:
+                self.current_image = self.walk_images[self.index]
+            if self.facing_right == True or self.facing_left == True and self.shield == True:
+                self.current_image = self.walk_shield_images[self.index]
+            if self.shield and self.facing_left == False and self.facing_right == False:
+                if self.index == 2:
+
+                    self.current_image =  self.shield_images[2]
+
+
+                else:
+                    self.current_image = self.shield_images[self.index]
+
+            '''
             #if the character is not moving but having the shield on
-            if self.shiled_hold != True and self.facing_right == False and self.facing_left == False:
+            if self.shiled_hold != True  and self.facing_right == False and self.facing_left == False:
                 self.index = (self.index + 1) % len(self.shield_images)
                 if self.index == 2:
 
-                    self.current_image = self.shield_images[2]
+                    self.current_image =  self.shield_images[2]
 
                     self.shiled_hold = True
                 else:
                     self.current_image = self.shield_images[self.index]
 
             #if the player is is moving to the righ but not using the shield
-            if self.facing_right == True and self.shiled_hold == False:
-                self.index = (self.index + 1) % len(self.walk_images)
-                self.current_image = self.walk_images[self.index]
+            if self.facing_right == True and self.shield == False:
+                self.index = (self.walking_index + 1) % len(self.walk_images)
+                self.current_image = self.walk_images[self.walking_index]
 
             #if the player is moving to the left and not using the shield
-            if self.facing_left == True and self.shiled_hold == False:
-                self.index = (self.index + 1) % len(self.walk_left)
-                self.current_image = self.walk_left[self.index]
+            if self.facing_left == True and self.shield != True:
+                self.index = (self.walking_index + 1) % len(self.walk_left)
+                self.current_image = self.walk_left[self.walking_index]
+                '''
+
+
 
 
 
@@ -345,7 +373,7 @@ class player(sprite):
         pygame.draw.circle(screen, (255, 0, 0),
                            self.pic_center(),
                            self.radius, 2)
-        if self.shield == True or self.pressing_lef_hold == True or self.pressing_righ_hold == True:
+        if self.shield == True or self.facing_left == True or self.facing_right == True:
             screen.blit(self.current_image, (self.position.x, self.position.y))
         else:
             screen.blit(self.image_show, (self.position.x, self.position.y))

@@ -248,19 +248,26 @@ def play_game():
 
         if keys[pygame.K_SPACE]:
             player_s.shield = True
+            player_s.shiled_hold = True
         else:
             player_s.shield = False
             player_s.shiled_hold = False
 
         if keys[pygame.K_a]: # a is currently pressed
             player_s.pressing_lef_hold = True
-            player_s.pressing_righ_hold = False
+
             player_s.velocity.x -= 0.002
             if player_s.velocity.x < -1.0:
                 player_s.velocity.x = -1.0 # set max velocity
             player_s.facing_left = True
-            player_s.facing_right = False
-        elif keys[pygame.K_d]: # d is currently pressed
+
+        else:
+            player_s.facing_left = False
+            player_s.pressing_lef_hold = False
+
+
+
+        if keys[pygame.K_d]: # d is currently pressed
             player_s.pressing_righ_hold = True
             player_s.pressing_lef_hold = False
             player_s.velocity.x += 0.002
@@ -269,6 +276,9 @@ def play_game():
             player_s.facing_right = True
             player_s.facing_left = False
         else:
+            player_s.pressing_righ_hold = False
+            player_s.facing_right = False
+        if keys[pygame.K_d] != True and keys[pygame.K_a] != True:
             player_s.pressing_lef_hold = False
             player_s.pressing_righ_hold = False
             if player_s.velocity.x > 0:
