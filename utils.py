@@ -205,7 +205,11 @@ class player(sprite):
         self.hits = 0
         self.sdx = sdx
 
-
+        self.shield_available = True
+        self.shield_timer = 0
+        self.shield_maxtime = 1500
+        self.shield_cooldown_timer = 0
+        self.shield_cooldown = 800
 
     def pic_center(self):
         size = self.image_show.get_size()
@@ -279,6 +283,19 @@ class player(sprite):
         elif self.velocity.x < 0:
             self.image_show = self.image_l
 
+        if self.shield:
+            self.shield_timer += delta
+            if self.shield_timer >= self.shield_maxtime:
+                self.shield = False
+                self.shield_available = False
+                self.shield_cooldown_timer = self.shield_maxtime - self.shield_timer
+        else:
+            self.shield_cooldown_timer += delta
+            if self.shield_cooldown_timer >= self.shield_cooldown:
+                self.shield_available = True
+                self.shield_cooldown_timer = 0
+            self.shield_timer = 0
+        
         if self.hero_mode:
             self.hits = 0
 

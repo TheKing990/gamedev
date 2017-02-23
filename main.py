@@ -246,11 +246,11 @@ def play_game():
 
         keys = pygame.key.get_pressed()
 
-        if keys[pygame.K_SPACE]:
+        if keys[pygame.K_SPACE] and player_s.shield_available:
             player_s.shield = True
-        else:
-            player_s.shield = False
-            player_s.shiled_hold = False
+        #else:
+        #    player_s.shield = False
+        #    player_s.shiled_hold = False
 
         if keys[pygame.K_a]: # a is currently pressed
             player_s.velocity.x -= 0.002
