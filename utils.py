@@ -174,9 +174,11 @@ class player(sprite):
         self.hero_mode = False # for testing purposes, don't let player die
 
 
-        ''' things you need for the shield '''
+        ''' things you need for animation '''
         self.shield = False
         self.shiled_hold = False
+        self.pressing_righ_hold = False;
+        self.pressing_lef_hold = False
         self.facing_right = True
         self.facing_left = False
 
@@ -343,7 +345,7 @@ class player(sprite):
         pygame.draw.circle(screen, (255, 0, 0),
                            self.pic_center(),
                            self.radius, 2)
-        if self.shield:
-            screen.blit(self.shield_current_Image, (self.position.x, self.position.y))
+        if self.shield == True or self.pressing_lef_hold == True or self.pressing_righ_hold == True:
+            screen.blit(self.current_image, (self.position.x, self.position.y))
         else:
             screen.blit(self.image_show, (self.position.x, self.position.y))

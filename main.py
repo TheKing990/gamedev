@@ -253,18 +253,24 @@ def play_game():
             player_s.shiled_hold = False
 
         if keys[pygame.K_a]: # a is currently pressed
+            player_s.pressing_lef_hold = True
+            player_s.pressing_righ_hold = False
             player_s.velocity.x -= 0.002
             if player_s.velocity.x < -1.0:
                 player_s.velocity.x = -1.0 # set max velocity
             player_s.facing_left = True
             player_s.facing_right = False
         elif keys[pygame.K_d]: # d is currently pressed
+            player_s.pressing_righ_hold = True
+            player_s.pressing_lef_hold = False
             player_s.velocity.x += 0.002
             if player_s.velocity.x > 1.0:
                 player_s.velocity.x = 1.0
             player_s.facing_right = True
             player_s.facing_left = False
         else:
+            player_s.pressing_lef_hold = False
+            player_s.pressing_righ_hold = False
             if player_s.velocity.x > 0:
                 player_s.velocity.x -= accel.scale(delta).x
                 if player_s.velocity.x < 0:
@@ -336,7 +342,7 @@ def play_game():
                 stage_index += 1
             else:
                 player.NEXT_WIN = False
-            
+
         old_tick = current_tick # pygame.time.get_ticks()
 
 while "Game is fun":
