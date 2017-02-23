@@ -1,4 +1,4 @@
-
+#!/usr/bin/python2
 
 from utils import *
 
@@ -96,7 +96,27 @@ class Minion(Enemy):
         self.attack_max = 1
         self.radius = self.radius * 0.4
 
+        self.animation_time = 250
+        self.animation_timer = 0
+        self.animation_index = 0
+        self.defeated = False
+        self.done = False
+
+        self.animate = load_Image('art/enemy_gone/', self.size)
+
     def update(self, delta, player_s=None):
+        if self.defeated and not self.done:
+            if self.animation_index <= len(self.animate) - 1:
+                self.animation_timer += delta
+                if self.animation_timer >= self.animation_time:
+                    self.animation_timer = self.animation_time - self.animation_timer
+                    self.animation_index += 1
+                    if self.animation_index < len(self.animate):
+                        self.image = self.animate[self.animation_index]                    
+            else:
+                self.done = True
+            return
+            
         super(Enemy, self).update(delta)
         self.attack(player_s)
         if self.velocity.x > 0:
@@ -105,6 +125,18 @@ class Minion(Enemy):
             self.image = self.image_l
         for fire in self.attack_count:
             fire.update(delta)
+
+        if abs(self.velocity.x) < 0.35:
+            if self.image == self.image_r:
+                self.velocity.x += 0.05
+            else:
+                self.velocity.x -= 0.05
+
+    def collision(self, other):
+        if isinstance(other, Minion):
+            return # Minion do not collide with Minions
+        else:
+            super(Minion, self).collision(other)
 
     def draw(self, screen):
         super(Enemy, self).draw(screen)

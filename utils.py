@@ -10,20 +10,19 @@ SS = (1024, 700)
 def load_Image(path, size=(75, 75)):
     images = []
     for files in os.listdir(path):
-        image = pygame.image.load(path +files ).convert_alpha()
+        image = pygame.image.load(path + files).convert_alpha()
         image = pygame.transform.scale(image, size)
         images.append(image)
     return images
+
 # flips images in an array
 def flip_array_images(arr):
-
     images1 = []
     for i in arr:
-        i = pygame.transform.flip(i,True, False)
+        i = pygame.transform.flip(i, True, False)
         images1.append(i)
-
     return images1
-
+    #return [pygame.transform.flip(i, True, False) for i in arr]
 
 class vector2:
     # constructor
@@ -118,13 +117,20 @@ class sprite(object):
             self.position.y = 0
 
     def collision(self, other):
-        #cn = self.position.subtract(other.position)
+        cn = self.position.subtract(other.position)
         center = self.pic_center()
         other_center = other.pic_center()
-        cn = vector2(center[0], center[1]).subtract(vector2(other_center[0], other_center[1]))
-        dist = cn.magnitude()
-        if dist < (self.radius + other.radius): # collision?
-            scale_factor = 0.5 * ((self.radius + other.radius) - dist)
+        cn_c = vector2(center[0], center[1]).subtract(vector2(other_center[0], center[1]))
+        dist = cn_c.magnitude()
+        if hasattr(other, "shield"):
+            if other.shield:
+                o_radius = other.radius * 3.5
+            else:
+                o_radius = other.radius
+        else:
+            o_radius = other.radius
+        if dist < (self.radius + o_radius): # collision?
+            scale_factor = 0.5 * ((self.radius + o_radius) - dist)
             diff = cn.normalize().scale(scale_factor)
 
             # move balls away from each other
@@ -149,9 +155,9 @@ class sprite(object):
             other.velocity = vt_o.add(vn_s)
 
     def draw(self, screen):
-        pygame.draw.circle(screen, (255, 0, 0),
-                           self.pic_center(),
-                           int(self.radius), 2)
+        #pygame.draw.circle(screen, (255, 0, 0),
+        #                   self.pic_center(),
+        #                   int(self.radius), 2)
         screen.blit(self.image, (self.position.x, self.position.y))
 
 class player(sprite):
@@ -170,10 +176,9 @@ class player(sprite):
         self.image_show = self.image_r
         self.size = self.image_l.get_size()
         self.radius = math.sqrt((self.size[0] ** 2) + (self.size[1] ** 2))
-        self.radius = int((self.radius / 3) * 0.75)
+        self.radius = int((self.radius / 3) * 0.30)
         self.position = vector2(pos.x, pos.y)
         self.velocity = vector2(vel.x, vel.y)
-        self.color = [0, 0, 0]
         self.hero_mode = False # for testing purposes, don't let player die
 
 
@@ -183,11 +188,11 @@ class player(sprite):
         self.facing_right = True
         self.facing_left = False
 
-        self.shield_images = load_Image('art/apprentice_moves/shield/', self.size)
-        self.shield_sprites = self.shield_images
-        self.shield_left_sprites  = flip_array_images(self.shield_images)
+        self.shield_right_sprites = load_Image('art/apprentice_moves/shield/', self.size)
+        self.shield_sprites = self.shield_right_sprites
+        self.shield_left_sprites  = flip_array_images(self.shield_right_sprites)
         self.index = 0
-        self.shield_current_Image = self.shield_images[self.index]
+        self.shield_current_Image = self.shield_sprites[self.index]
         '''end of shield'''
 
         '''moving normal without shield'''
@@ -197,9 +202,8 @@ class player(sprite):
         self.walking_index = 0
         self.walking_current = self.walk_images[self.walking_index]
 
-        self.animation_time = 0.1
         self.current_time = 0
-        self.animation_frames = 75
+        self.animation_frames = 125
         self.current_frame = 0
 
         self.hits = 0
@@ -227,32 +231,44 @@ class player(sprite):
             self.facing_left = False
             self.facing_right = True
             #choosing the images facing right
-            self.shield_images = self.shield_sprites
+            self.shield_sprites = self.shield_right_sprites
             self.walk_images = self.walk_right
-
         elif self.velocity.x < 0:
             self.facing_left = True
             self.facing_right = False
             # choosing the flip side of images
-            self.shield_images = self.shield_left_sprites
+            self.shield_sprites = self.shield_left_sprites
             self.walk_images = self.walk_left
 
-
-
+        if self.shield: # animate shield
+            self.current_time += delta
+            if self.current_time >= self.animation_frames:
+                self.current_time = self.animation_frames - self.current_time
+                self.index += 1
+                if self.index < len(self.shield_sprites):
+                    self.shield_current_Image = self.shield_sprites[self.index]
+                else:
+                    self.index = len(self.shield_sprites) - 1
+        else:
+            self.current_time = 0
+            self.index = 0
+                
+        """
         #creating animation for shield
         self.current_frame +=1
         if self.current_frame >= self.animation_frames:
             self.current_frame = 0
 
             if self.shiled_hold != True:
-                self.index = (self.index + 1) % len(self.shield_images)
+                self.index = (self.index + 1) % len(self.shield_sprites)
                 if self.index == 2:
 
-                    self.shield_current_Image = self.shield_images[2]
+                    self.shield_current_Image = self.shield_sprites[2]
                     self.shiled_hold = True
                 else:
-                    self.shield_current_Image = self.shield_images[self.index]
-
+                    self.shield_current_Image = self.shield_sprites[self.index]
+        """
+        
         if self.shield:
             s_top = center[1] - self.radius
             s_right = center[0] + self.radius
@@ -283,6 +299,7 @@ class player(sprite):
         elif self.velocity.x < 0:
             self.image_show = self.image_l
 
+        # shield usage limit code
         if self.shield:
             self.shield_timer += delta
             if self.shield_timer >= self.shield_maxtime:
@@ -302,18 +319,22 @@ class player(sprite):
 
     def collision(self, other):
         center = self.pic_center()
+        if self.shield:
+            radius = self.radius * 3.5
+        else:
+            radius = self.radius
         if hasattr(other, "hits"): # if final boss, make y pos the same
             # boss is on higher ground so we have to lower it for correct
             # collision
-            #cn = self.position.subtract(vector2(other.position.x, self.position.y))
-            cn = vector2(center[0], center[1]).subtract(vector2(other.pic_center()[0], center[1]))
+            cn = self.position.subtract(vector2(other.position.x, self.position.y))
+            cn_c = vector2(center[0], center[1]).subtract(vector2(other.pic_center()[0], center[1]))
         else:
             other_center = other.pic_center()
-            cn = vector2(center[0], center[1]).subtract(vector2(other_center[0], other_center[1]))
-            #cn = self.position.subtract(other.position)
-        dist = cn.magnitude()
-        if dist < (self.radius + other.radius): # collision?
-            scale_factor = 0.5 * ((self.radius + other.radius) - dist)
+            cn_c = vector2(center[0], center[1]).subtract(vector2(other_center[0], other_center[1]))
+            cn = self.position.subtract(other.position)
+        dist = cn_c.magnitude()
+        if dist < (radius + other.radius): # collision?
+            scale_factor = 0.5 * ((radius + other.radius) - dist)
             diff = cn.normalize().scale(scale_factor)
 
             # move balls away from each other
@@ -343,9 +364,13 @@ class player(sprite):
             self.hits = 0
 
     def draw(self, screen):
-        pygame.draw.circle(screen, (255, 0, 0),
-                           self.pic_center(),
-                           self.radius, 2)
+        if self.shield:
+            radius = int(self.radius * 3.5)
+        else:
+            radius = self.radius
+        #pygame.draw.circle(screen, (255, 0, 0),
+        #                   self.pic_center(),
+        #                   radius, 2)
         if self.shield:
             screen.blit(self.shield_current_Image, (self.position.x, self.position.y))
         else:

@@ -216,9 +216,8 @@ def play_game():
             continue
 
         if BOSS_FIGHT and len(sprites) == 1:
-            # game over
             congrats = "Well done, go forth brave apprentice...  "
-            congrats = "Press c to continue"
+            congrats += "Press c to continue"
             screen.fill(COLORS['black'])
             label = myfont.render(congrats, 1, COLORS['white'])
             screen.blit(label, (200, 200))
@@ -258,12 +257,14 @@ def play_game():
                 player_s.velocity.x = -1.0 # set max velocity
             player_s.facing_left = True
             player_s.facing_right = False
+            player_s.shield_current_Image = player_s.shield_sprites[player_s.index]
         elif keys[pygame.K_d]: # d is currently pressed
             player_s.velocity.x += 0.002
             if player_s.velocity.x > 1.0:
                 player_s.velocity.x = 1.0
             player_s.facing_right = True
             player_s.facing_left = False
+            player_s.shield_current_Image = player_s.shield_sprites[player_s.index]
         else:
             if player_s.velocity.x > 0:
                 player_s.velocity.x -= accel.scale(delta).x
@@ -292,12 +293,19 @@ def play_game():
             for f in sprites[i].attack_count:
                 if f.collision_minion(sprites[i]):
                     if not BOSS_FIGHT:
-                        minions_killed.append(sprites[i])
+                        sprites[i].defeated = True
+                        sprites[i].image = sprites[i].animate[0]
+                        #minions_killed.append(sprites[i])
                     elif BOSS_FIGHT:
                         sprites[i].hits -= 1
                         if sprites[i].hits == 0:
                             minions_killed.append(sprites[i])
                     continue
+
+        for i in range(1, len(sprites)):
+            if hasattr(sprites[i], "defeated"):
+                if sprites[i].defeated and sprites[i].done:
+                    minions_killed.append(sprites[i])
 
         for m in minions_killed:
             sprites.remove(m)
@@ -305,7 +313,8 @@ def play_game():
 
         for i in range(0, len(sprites)):
             for other in sprites[i + 1:]:
-                sprites[i].collision(other)
+                if hasattr(other, "defeated") and not other.defeated:
+                    sprites[i].collision(other)
 
         # draw to screen and flip
         screen.blit(win_background, (0, 0))
