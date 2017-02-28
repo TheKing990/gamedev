@@ -162,9 +162,9 @@ class sprite(object):
             other.velocity = vt_o.add(vn_s)
 
     def draw(self, screen):
-        pygame.draw.circle(screen, (255, 0, 0),
-                           self.pic_center(),
-                           int(self.radius), 2)
+        #pygame.draw.circle(screen, (255, 0, 0),
+        #                   self.pic_center(),
+        #                  int(self.radius), 2)
         screen.blit(self.image, (self.position.x, self.position.y))
 
 class player(sprite):
@@ -383,9 +383,9 @@ class player(sprite):
             radius = int(self.radius * 3.5)
         else:
             radius = self.radius
-        pygame.draw.circle(screen, (255, 0, 0),
-                           self.pic_center(),
-                           radius, 2)
+        #pygame.draw.circle(screen, (255, 0, 0),
+        #                   self.pic_center(),
+        #                   radius, 2)
         if self.shield:
             screen.blit(self.shield_current_Image, (self.position.x, self.position.y))
         else:
